@@ -16,6 +16,8 @@ export default function CheckoutForm() {
   const cart = useCart(), catalog = useCatalog();
   const [terms, setTerms] = useState(false), [sending, setSending] = useState(false), [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const [delivery,setDelivery]=useState<"address"|"easybox">("address");
+  const shippingBani=delivery==="easybox" ? (catalog.easyboxShippingBani??catalog.shippingBani??0) : (catalog.shippingBani??0);
   const busy = useRef(false);
   const attempt = useRef<{ fingerprint: string; key: string } | null>(null);
   useEffect(() => { attempt.current = null; }, [cart.checkoutRecovery.revision]);
@@ -26,7 +28,7 @@ export default function CheckoutForm() {
   const subtotal = products.reduce((sum, line) => sum + (line.product?.price ?? 0) * line.quantity, 0);
   if (reference) return <section className="checkout-result section-padding" role="status">
     <Check size={36} aria-hidden="true" /><h1>Mulțumim pentru comandă.</h1>
-    <p>Comanda ramburs a fost înregistrată. Vei achita produsele și transportul la livrare.</p>
+    <p>{delivery==="easybox"?"Comanda ramburs a fost înregistrată. Vei achita produsele și transportul la ridicarea coletului din easybox.":"Comanda ramburs a fost înregistrată. Vei achita produsele și transportul la livrare."}</p>
     <p>Referință comandă: <strong>{reference}</strong></p><Link className="primary-button" href="/cafea">Înapoi la magazin</Link>
   </section>;
   if (cart.checkoutRecovery.busy || cart.checkoutRecovery.error) return <section className="checkout-result section-padding">
@@ -74,7 +76,7 @@ export default function CheckoutForm() {
       }}>
         <fieldset className="checkout-form-content" disabled={sending}>
           <legend className="sr-only">Datele comenzii</legend>
-          <CheckoutFields card={catalog.checkout} cod={catalog.cod} />
+          <CheckoutFields card={catalog.checkout} cod={catalog.cod} onDeliveryChange={setDelivery} />
           <OrderLegalAcknowledgement checked={terms} onChange={setTerms} disabled={sending} />
           {error && <p className="checkout-error" role="alert">{error}</p>}
           <button className="primary-button" type="submit" disabled={sending || !terms}>{sending ? "Se procesează…" : "Trimite comanda"}<ArrowUpRight size={18} aria-hidden="true" /></button>
@@ -83,7 +85,7 @@ export default function CheckoutForm() {
       <aside className="checkout-summary" aria-label="Rezumat comandă">
         <h2>Comanda ta</h2>
         <ul>{products.map(line => <li key={`${line.slug}-${line.grind}`}><span><strong>{line.product!.name}</strong><small>{line.grind} · {line.quantity} buc.</small></span><span>{money(line.product!.price! * line.quantity)}</span></li>)}</ul>
-        <dl><div><dt>Produse</dt><dd>{money(subtotal)}</dd></div><div><dt>Transport</dt><dd>{money((catalog.shippingBani ?? 0) / 100)}</dd></div><div className="checkout-grand-total"><dt>Total de plată</dt><dd>{money(subtotal + (catalog.shippingBani ?? 0) / 100)}</dd></div></dl>
+        <dl><div><dt>Produse</dt><dd>{money(subtotal)}</dd></div><div><dt>{delivery==="easybox"?"Transport · easybox":"Transport"}</dt><dd>{money(shippingBani / 100)}</dd></div><div className="checkout-grand-total"><dt>Total de plată</dt><dd>{money(subtotal + shippingBani / 100)}</dd></div></dl>
         <button className="text-link" type="button" onClick={cart.open}>Modifică selecția</button>
       </aside>
     </div>

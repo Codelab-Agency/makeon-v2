@@ -715,3 +715,36 @@ test('catalog still lists products when Stripe reservation maintenance fails', a
     await db.execute(sql`ALTER TABLE checkout_reservations_fixture RENAME TO checkout_reservations`);
   }
 });
+
+test('card, COD and made-to-order checkouts persist the verified easybox and server delivery fee',async()=>{
+  const names=['SAMEDAY_ENV','SAMEDAY_USERNAME','SAMEDAY_PASSWORD','SAMEDAY_LOCKER_CLIENT_ID','SAMEDAY_LOCKER_API_USERNAME','EASYBOX_SHIPPING_PRICE_BANI'];
+  const previous=Object.fromEntries(names.map(name=>[name,process.env[name]]));
+  Object.assign(process.env,{SAMEDAY_ENV:'production',SAMEDAY_USERNAME:'easybox-'+randomUUID(),SAMEDAY_PASSWORD:'test-only',SAMEDAY_LOCKER_CLIENT_ID:'map-test',SAMEDAY_LOCKER_API_USERNAME:'public-map-user',EASYBOX_SHIPPING_PRICE_BANI:'1800'});
+  const locker={id:1413,name:'easybox Verified',address:'Strada Locker 10',city:'Cluj-Napoca',county:'Cluj',postalCode:'400001',supportedPayment:true};
+  const deliveryFetcher=(async(url:string|URL|Request)=>String(url).endsWith('/api/authenticate')?Response.json({token:'test-token'}):Response.json({data:[{...locker,lockerId:locker.id,clientVisible:1,supportedPayment:1}]})) as typeof fetch;
+  const details=(method:'card'|'cod')=>({...checkoutDetails(method),shipping:{...checkoutDetails(method).shipping,method:'easybox' as const,locker:{...locker,name:'Forged name',address:'Wrong street 100'}}});
+  try{
+    const p=await product(4);
+    for(const method of ['card','cod'] as const){
+      const key=randomUUID(),reference=`MK-${key}`;
+      const result=await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],key,fakeStripe,cms,legal.version,details(method),deliveryFetcher);
+      if(method==='card'){
+        assert.equal((await cms.count({collection:'orders',where:{reference:{equals:reference}}})).totalDocs,0);
+        const draft=await reservation(reference);assert.equal(draft.shippingBani,1800);
+        await commerce.applySession({...keys.get(reference)!,status:'complete',payment_status:'paid'},cms);
+      }else assert.equal(result.paymentMethod,'cod');
+      const saved=(await cms.find({collection:'orders',where:{reference:{equals:reference}}})).docs[0];
+      assert.equal(saved.shippingBani,1800);assert.equal(saved.totalBani,6799);
+      const snapshot=saved.checkoutDetails as unknown as import('../../src/lib/checkout-details').CheckoutDetails;
+      assert.deepEqual(snapshot.shipping.locker,locker);assert.equal(snapshot.shipping.line1,locker.address);
+      assert.equal(snapshot.billing.address,checkoutDetails(method).billing.address);
+    }
+    const {parseProductionRequest,createProductionRequest}=await import('../../src/lib/production-orders');
+    const input=parseProductionRequest({key:randomUUID(),details:details('card'),items:[{slug:p.slug,grind:'Boabe',quantity:6}]});
+    const request=await createProductionRequest(input,cms,deliveryFetcher);
+    const saved=(await cms.find({collection:'orders',where:{reference:{equals:request.reference}}})).docs[0];
+    assert.equal(saved.status,'requested');
+    assert.deepEqual((saved.checkoutDetails as unknown as import('../../src/lib/checkout-details').CheckoutDetails).shipping.locker,locker);
+    const inventory=await cms.findByID({collection:'products',id:p.id});assert.equal(inventory.stock,2);assert.equal(inventory.reserved,0);
+  }finally{for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
+});

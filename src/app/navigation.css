@@ -69,15 +69,28 @@
 }
 .brand-horizontal {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 6%;
   width: 210px;
   max-width: 100%;
   line-height: 0;
 }
 .brand-horizontal > img {
   display: block;
-  width: 100%;
+  width: 28%;
   height: auto;
+  flex-shrink: 0;
+}
+.brand-horizontal > .brand-wordmark {
+  display: block;
+  width: 66%;
+  height: auto;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+.brand-mark-light .brand-wordmark {
+  color: #fffdf7;
 }
 .header > .brand-mark .brand-horizontal {
   width: 180px;

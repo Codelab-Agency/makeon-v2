@@ -7,6 +7,8 @@ type Catalog = {
   managed: boolean;
   checkout: boolean;
   cod: boolean;
+  easybox: boolean;
+  easyboxShippingBani: number | null;
   shippingBani: number | null;
   ready: boolean;
   unavailable: boolean;
@@ -29,6 +31,8 @@ export default function CatalogProvider({
     managed: false,
     checkout: false,
     cod: false,
+    easybox: false,
+    easyboxShippingBani: null,
     shippingBani: null,
     ready: false,
     unavailable: false,
@@ -50,6 +54,7 @@ export default function CatalogProvider({
             ...previous,
             checkout: false,
             cod: false,
+            easybox: false,
             ready: true,
             unavailable: true,
           }));

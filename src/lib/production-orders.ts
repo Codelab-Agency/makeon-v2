@@ -20,6 +20,7 @@ import {
 } from "./commerce";
 
 import { parseCheckoutDetails } from "./checkout-details";
+import { validateEasyboxDetails } from "./easybox";
 
 /** Made-to-order requests do not reserve existing inventory. Prices become immutable when a link is issued. */
 export function parseProductionRequest(value: unknown) {
@@ -71,7 +72,9 @@ export function parseProductionRequest(value: unknown) {
 export async function createProductionRequest(
   input: ReturnType<typeof parseProductionRequest> & { legalVersion?: string },
   cmsArg?: Payload,
+  deliveryFetcher?: typeof fetch,
 ) {
+  if (input.details) input = { ...input, details: await validateEasyboxDetails(input.details, deliveryFetcher) };
   const cms = cmsArg ?? (await getCMS());
   const reference = `MK-${input.key}`;
   const fingerprint = createHash("sha256")

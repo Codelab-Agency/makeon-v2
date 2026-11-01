@@ -147,9 +147,10 @@ export function OrderSummary() {
         </section>
         <section className="makeon-order-panel">
           <h3>
-            <MapPin size={19} /> Adresă de livrare
+            <MapPin size={19} /> {details?.shipping?.method==="easybox"?"Livrare la easybox":"Adresă de livrare"}
           </h3>
           <address>
+            {details?.shipping?.method==="easybox" && <div><strong>{details.shipping.locker?.name}</strong> · ID {details.shipping.locker?.id}</div>}
             {addressLines.length
               ? addressLines.map((line, i) => <div key={i}>{line}</div>)
               : "Adresa nu este disponibilă încă."}

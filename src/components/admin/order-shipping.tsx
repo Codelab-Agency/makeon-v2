@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import type { ShipmentPayment } from "@/lib/shipment-payment";
 import type { Order } from "@/payload-types";
+import type { CheckoutDetails } from "@/lib/checkout-details";
 
 type Shipment = { state: string; number: string | null; error: string | null; environment: string; canAttach: boolean };
 type Option = { id: number; name: string };
@@ -11,6 +12,8 @@ const text = (value: unknown) => typeof value === "string" ? value : "";
 
 export default function OrderShipping({ order }: { order: Order }) {
   const uid = useId();
+  const details=order.checkoutDetails as CheckoutDetails | null;
+  const locker=details?.shipping?.method==="easybox"?details.shipping.locker:undefined;
   const shipping = order.shippingAddress as Record<string, unknown> | null;
   const address = (shipping?.address || shipping || {}) as Record<string, unknown>;
   const [fields, setFields] = useState({
@@ -92,7 +95,9 @@ export default function OrderShipping({ order }: { order: Order }) {
       </>}
       {!loading && payment && !payment.allowed && (!shipment || shipment.state === "rejected") && <p>{payment.reason}</p>}
       {!loading && payment?.allowed && options && (!shipment || shipment.state === "rejected") && <>
-        <p>Livrare la adresă în România, un colet. {payment.cashOnDeliveryBani > 0 ? `Ramburs de încasat: ${new Intl.NumberFormat("ro-RO", { style: "currency", currency: "RON" }).format(payment.cashOnDeliveryBani / 100)} (produse + transport).` : "De încasat la livrare: 0,00 RON. Plata este deja achitată."} Verifică destinatarul și greutatea coletului ambalat.</p>
+        <p>{locker?"Livrare la easybox în România, un colet.":"Livrare la adresă în România, un colet."} {payment.cashOnDeliveryBani > 0 ? `Ramburs de încasat: ${new Intl.NumberFormat("ro-RO", { style: "currency", currency: "RON" }).format(payment.cashOnDeliveryBani / 100)} (produse + transport).` : "De încasat la livrare: 0,00 RON. Plata este deja achitată."} Verifică destinatarul și greutatea coletului ambalat.</p>
+        {locker && <p><strong>{locker.name}</strong> · ID {locker.id}. AWB-ul va folosi acest easybox; adresa de mai jos nu îl poate înlocui.</p>}
+        {!options.services.length && <p role="alert">Contul Sameday nu are un serviciu disponibil pentru metoda de livrare a comenzii.</p>}
         {options.environment === "sandbox" && <p><strong>Mediu de test — AWB fără livrare reală.</strong></p>}
         <fieldset disabled={busy} className="makeon-shipping-fields">
           <legend className="makeon-shipping-legend">Date pentru AWB</legend>
@@ -100,7 +105,7 @@ export default function OrderShipping({ order }: { order: Order }) {
             ["name", "Destinatar"], ["phone", "Telefon"], ["county", "Județ (denumire completă)"],
             ["city", "Localitate"], ["address", "Stradă, număr și detalii adresă"], ["postalCode", "Cod poștal (opțional)"],
           ] as const).map(([key, label]) => <label key={key} htmlFor={`${uid}-${key}`}>
-            {label}<input id={`${uid}-${key}`} value={fields[key]} onChange={event => setFields(previous => ({ ...previous, [key]: event.target.value }))} />
+            {label}<input id={`${uid}-${key}`} value={fields[key]} readOnly={Boolean(locker) && ["county","city","address","postalCode"].includes(key)} onChange={event => setFields(previous => ({ ...previous, [key]: event.target.value }))} />
           </label>)}
           <label htmlFor={`${uid}-weight`}>Greutate totală colet (kg)
             <input id={`${uid}-weight`} type="number" min="0.01" max="31.5" step="0.01" inputMode="decimal" placeholder="Ex. 1.25" value={fields.weight} onChange={event => setFields(previous => ({ ...previous, weight: event.target.value }))} />

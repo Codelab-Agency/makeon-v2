@@ -1,5 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
+import { parseEasyboxLocker } from "./easybox-selection";
 
 export class SamedayError extends Error {
   constructor(message: string, public status = 502, public uncertain = false) {
@@ -79,7 +80,7 @@ async function request(path: string, body?: Record<string, unknown>, fetcher: Fe
   return response;
 }
 
-export type ShippingOption = { id: number; name: string };
+export type ShippingOption = { id: number; name: string; deliveryMethod?: "address" | "easybox" };
 export async function samedayOptions(fetcher: Fetcher = fetch) {
   const list = async (path: string) => {
     const items: Record<string, unknown>[] = [];
@@ -96,9 +97,21 @@ export async function samedayOptions(fetcher: Fetcher = fetch) {
   return {
     environment: samedayConfig().environment,
     pickupPoints: points.map((p): ShippingOption => ({ id: Number(p.id), name: String(p.alias || p.name || p.address || `Punct ${p.id}`) })),
-    // Standard domestic home delivery only. Locker, PUDO, returns and crossborder are excluded.
-    services: services.filter(s => s.serviceCode === "24").map((s): ShippingOption => ({ id: Number(s.id), name: String(s.name) })),
+    // IDs are account/environment specific. Domestic locker service is LN.
+    services: services.filter(s => s.serviceCode === "24" || s.serviceCode === "LN").map((s): ShippingOption => ({ id: Number(s.id), name: String(s.name), deliveryMethod: s.serviceCode === "LN" ? "easybox" : "address" })),
   };
+}
+
+/** Validate one locker with Sameday, never trust map callback addresses from a browser. */
+export async function samedayLocker(id: number, fetcher: Fetcher = fetch) {
+  if (!Number.isSafeInteger(id) || id <= 0) throw new SamedayError("Easybox invalid.", 400);
+  const response = await request(`/api/client/lockers?lockersList=${id}`, undefined, fetcher);
+  const result = await response.json();
+  const locker = Array.isArray(result?.data) ? result.data.find((item: {lockerId?:unknown}) => Number(item.lockerId) === id) : undefined;
+  if (!locker || Number(locker.clientVisible) === 0) throw new SamedayError("Easyboxul nu mai este disponibil. Alege alt locker de pe hartă.", 409);
+  try {
+    return parseEasyboxLocker({ id, name: locker.name, address: locker.address, city: locker.city, county: locker.county, postalCode: String(locker.postalCode ?? ""), supportedPayment: Number(locker.supportedPayment) === 1 });
+  } catch { throw new SamedayError("Datele easyboxului nu au putut fi verificate. Alege alt locker.", 409); }
 }
 
 export async function samedayCreate(body: Record<string, unknown>, fetcher: Fetcher = fetch) {

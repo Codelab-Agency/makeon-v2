@@ -118,6 +118,22 @@ test("durable claims prevent duplicate AWBs across concurrent requests and uncer
     process.env.SAMEDAY_USERNAME = "another-account";
     await assert.rejects(shipmentFor(cms, 1), /configurații/);
     assert.equal((await pool.query("SELECT snapshot->>'status' AS status FROM orders WHERE id < 4")).rows.every(row => row.status === "paid"), true);
+    // The same durable claims apply to easybox; the saved locker wins over edited recipient fields.
+    process.env.SAMEDAY_ENV='production';process.env.SAMEDAY_USERNAME='locker-'+randomUUID();
+    const locker={id:1413,name:'easybox Test',address:'Strada Locker 10',city:'Cluj-Napoca',county:'Cluj',postalCode:'400001',supportedPayment:true};
+    const lockerOrder={...order,id:5,reference:`${order.reference}-5`,paymentMethod:'cod',status:'cod_pending',totalBani:11800,checkoutDetails:{shipping:{method:'easybox',locker}}};
+    await pool.query('INSERT INTO orders VALUES($1,$2,$3)',[5,lockerOrder.reference,JSON.stringify(lockerOrder)]);
+    let lockerCalls=0,lockerPayload:URLSearchParams|undefined;
+    const lockerFetcher=(async(url:string|URL|Request,init?:RequestInit)=>{
+      if(String(url).includes('/api/client/lockers'))return Response.json({data:[{...locker,lockerId:locker.id,clientVisible:1,supportedPayment:1}]});
+      return mock(async()=>{lockerCalls++;lockerPayload=new URLSearchParams(String(init?.body));return Response.json({awbNumber:'TESTLOCKER123'});})(url,init);
+    }) as typeof fetch;
+    await assert.rejects(createOrderShipment(cms,5,input,lockerFetcher),/Serviciul Sameday/);
+    assert.equal(lockerCalls,0);
+    await Promise.allSettled([createOrderShipment(cms,5,{...input,service:15},lockerFetcher),createOrderShipment(cms,5,{...input,service:15},lockerFetcher)]);
+    assert.equal(lockerCalls,1);assert.equal(lockerPayload?.get('lockerLastMile'),'1413');
+    assert.equal(lockerPayload?.get('service'),'15');assert.equal(lockerPayload?.get('cashOnDelivery'),'118');
+    assert.equal(lockerPayload?.get('awbRecipient[address]'),locker.address);
   } finally {
     for (const session of Object.values(sessions)) { await session.client.query("ROLLBACK"); session.client.release(); }
     await pool.end();

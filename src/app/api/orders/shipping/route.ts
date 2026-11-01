@@ -2,7 +2,7 @@ import { getCMS } from "@/lib/cms";
 import { allowedRequestOrigin } from "@/lib/request-origin";
 import { SamedayError, samedayOptions, samedayPDF } from "@/lib/sameday-client";
 import { shipmentPayment } from "@/lib/shipment-payment";
-import { shipmentFor, createOrderShipment, attachOrderShipment } from "@/lib/order-shipping";
+import { shipmentFor, createOrderShipment, attachOrderShipment, orderEasybox } from "@/lib/order-shipping";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -38,6 +38,7 @@ async function handle(request: Request, mutate: boolean) {
     }
     const payment = shipmentPayment(order);
     const options = payment.allowed && (!shipment || shipment.state === "rejected") ? await samedayOptions() : null;
+    if(options)options.services=options.services.filter(service=>service.deliveryMethod===(orderEasybox(order)?"easybox":"address"));
     return Response.json({ shipment, options, payment }, { headers });
   } catch (error) {
     if (error instanceof SamedayError) return Response.json({ error: error.message }, { status: error.status, headers });

@@ -20,6 +20,7 @@ import {
 } from "./commerce-validation";
 
 import { parseCheckoutDetails, type CheckoutDetails } from "./checkout-details";
+import { validateEasyboxDetails, deliveryPriceBani } from "./easybox";
 
 export function stripeClient() {
   if (!process.env.STRIPE_SECRET_KEY)
@@ -344,7 +345,7 @@ export async function sessionForOrder(
               shipping_rate_data: {
                 type: "fixed_amount",
                 fixed_amount: { amount: order.shippingBani, currency: "ron" },
-                display_name: "Livrare în România",
+                display_name: (order.checkoutDetails as CheckoutDetails | null)?.shipping?.method==="easybox" ? "Livrare la easybox" : "Livrare în România",
               },
             },
           ],
@@ -400,9 +401,11 @@ export async function createCheckout(
   cmsArg?: Payload,
   legalVersion?: string,
   details?: CheckoutDetails,
+  deliveryFetcher?: typeof fetch,
 ) {
   const cms = cmsArg ?? (await getCMS());
   details = details ? parseCheckoutDetails(details) : undefined;
+  if (details) details = await validateEasyboxDetails(details, deliveryFetcher);
   const cod = details?.paymentMethod === "cod";
   if (!(cod ? ordersConfigured() : checkoutConfigured()))
     throw new CommerceError("Metoda de plată nu este disponibilă momentan.", 503);
@@ -482,7 +485,7 @@ export async function createCheckout(
           409,
         );
     }
-    const shippingBani = Number(process.env.SHIPPING_PRICE_BANI);
+    const shippingBani = deliveryPriceBani(details?.shipping.method);
     const totalBani = items.reduce(
       (sum, line) => sum + line.unitPriceBani * line.quantity,
       shippingBani,

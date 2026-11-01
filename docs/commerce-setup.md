@@ -92,7 +92,27 @@ Actualizarea statusului nu generează automat un AWB sau o factură. Rambursări
 
 ## AWB Sameday
 
-În detaliul unei comenzi plătite sau confirmate cu ramburs, secțiunea **Livrare Sameday · AWB** permite emiterea unui AWB pentru un singur colet, cu livrare la adresă în România. Verifică numele, telefonul, adresa și județul (denumirea completă), apoi introdu greutatea coletului ambalat în kg. Punctul de ridicare și serviciul 24H sunt încărcate din contul Sameday. Pentru card, AWB-ul are ramburs zero. Pentru ramburs, AWB-ul preia automat totalul produselor și transportului în lei. Nu sunt incluse harta easybox, livrările internaționale sau retururile.
+În detaliul unei comenzi plătite sau confirmate cu ramburs, secțiunea **Livrare Sameday · AWB** permite emiterea unui AWB pentru un singur colet, cu livrare la adresă sau la easybox în România. Verifică numele, telefonul, adresa și județul (denumirea completă), apoi introdu greutatea coletului ambalat în kg. Punctul de ridicare și serviciile sunt încărcate din contul Sameday: 24H pentru adresă, Locker NextDay (`LN`) pentru easybox. Pentru card, AWB-ul are ramburs zero. Pentru ramburs, AWB-ul preia automat totalul produselor și transportului în lei. Nu sunt incluse livrările internaționale sau retururile.
+
+### Harta și livrarea easybox
+
+Pe lângă credențialele API de producție, completează în `.env` (și în mediul de producție):
+
+```dotenv
+SAMEDAY_LOCKER_CLIENT_ID=identificatorul-primit-de-la-sameday
+SAMEDAY_LOCKER_API_USERNAME=utilizatorul-public-al-hartii
+EASYBOX_SHIPPING_PRICE_BANI=1800
+```
+
+Ultima variabilă este opțională; exemplul înseamnă 18 lei. Dacă este goală, se folosește `SHIPPING_PRICE_BANI`. Repornește serverul după modificarea configurației. Cei doi identificatori ai hărții sunt publici și separați de parola API. Parola Sameday rămâne exclusiv pe server. Harta se încarcă la apăsarea butonului, conform [documentației oficiale](https://cdn.sameday.ro/locker-plugin/techdoc.html).
+
+Opțiunea apare în checkout numai când toate credențialele sunt configurate și `SAMEDAY_ENV=production`: harta publică nu este folosită cu AWB-uri sandbox. Contul trebuie să aibă serviciul Locker NextDay activ. Nu se introduc manual ID-uri de servicii.
+
+Dacă harta afișează **„Clientul nu a fost găsit”**, verifică împreună cu Sameday că `SAMEDAY_LOCKER_CLIENT_ID` este identificatorul emis pentru **Locker Plugin în producție**, asociat cu utilizatorul LM transmis în `SAMEDAY_LOCKER_API_USERNAME`. Un UUID cu format valid nu dovedește înregistrarea clientului. Nu folosi ID-ul numeric de client din eAWB, un UUID generat sau identificatorul din exemplul documentației. Cere Sameday confirmarea perechii de identificatori pentru plugin; nu trimite parola API. După corectarea valorilor, repornește serverul și reîncarcă pagina.
+
+Clientul selectează lockerul pe hartă. Serverul verifică ID-ul și salvează denumirea și adresa confirmate de Sameday, separat de adresa de facturare. Sunt acceptate easyboxuri, fără puncte partenere PUDO. Pentru ramburs, lockerul trebuie să accepte plata la ridicare; altfel clientul alege alt locker sau card online. Aceeași selecție funcționează pentru comenzile la cerere; transportul final se confirmă telefonic împreună cu oferta.
+
+În administrare, destinația easybox este preluată din comandă și nu se editează în formularul AWB. La emitere se verifică din nou lockerul și se transmite `lockerLastMile` cu serviciul corespunzător. Verifică înainte de expediere că ambalajul și greutatea respectă condițiile serviciului din contractul Sameday. Integrarea easybox nu necesită o migrare nouă: selecția se salvează în datele existente ale comenzii.
 
 După emitere poți descărca eticheta PDF A4 sau A6. Statusul comenzii nu se schimbă automat; marchează expedierea când predai coletul. Anulările și solicitările de ridicare se gestionează în eAWB.
 

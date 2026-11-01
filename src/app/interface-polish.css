@@ -1,5 +1,6 @@
 /* Shared interaction geometry; catalog artwork and product typography stay local. */
 body { background:var(--makeon-surface); }
+.site.shop-site { --paper:var(--makeon-surface); background:var(--makeon-surface); }
 ::selection { background:#ebbf5066; color:var(--makeon-ink); }
 :where(button,summary,[role="button"],[role="option"],.desktop-nav a,.mobile-menu-nav a,.brand-mark,.b2b-btn,.b2b-link,.primary-button,.offer-button,.mobile-offer-button,.opening-service-link,.text-link,.shop-categories a,.site-footer-navigation a) {
   -webkit-user-select:none;

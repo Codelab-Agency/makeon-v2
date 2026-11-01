@@ -5,7 +5,15 @@ import type { Payload } from "payload";
 import type { Order } from "@/payload-types";
 import { transaction, transactionDB, lockOrder } from "./commerce";
 import { shipmentPayment } from "./shipment-payment";
-import { SamedayError, samedayConfig, samedayOptions, samedayCreate, samedayPDF } from "./sameday-client";
+import { SamedayError, samedayConfig, samedayOptions, samedayCreate, samedayPDF, samedayLocker } from "./sameday-client";
+import { parseEasyboxLocker, type EasyboxLocker } from "./easybox-selection";
+
+export function orderEasybox(order: Order): EasyboxLocker | undefined {
+  const details=order.checkoutDetails as {shipping?:{method?:string;locker?:unknown}}|null;
+  if(details?.shipping?.method!=="easybox")return;
+  try{return parseEasyboxLocker(details.shipping.locker);}
+  catch{throw new SamedayError("Easyboxul din comandă nu este valid. Verifică datele înainte de emiterea AWB-ului.",409);}
+}
 
 const db = (cms: Payload) => (cms.db as unknown as PostgresAdapter).drizzle;
 type ShipmentRow = { order_id: number; environment: string; account_hash: string; attempt_id: string; state: string; awb_number: string | null; attempted_at: string; error: string | null };
@@ -49,22 +57,27 @@ export function shippingInput(value: unknown) {
   };
 }
 
-export function shipmentBody(order: Order, input: ReturnType<typeof shippingInput>) {
+export function shipmentBody(order: Order, input: ReturnType<typeof shippingInput>, verifiedLocker?: EasyboxLocker) {
   const payment = shipmentPayment(order);
   if (!payment.allowed) throw new SamedayError(payment.reason!, 409);
   const shipping = order.shippingAddress as { address?: { country?: string }; country?: string } | null;
   const country = shipping?.address?.country || shipping?.country;
   if (country !== "RO") throw new SamedayError("Această integrare acceptă doar livrări în România.", 400);
   if (input.postalCode && !/^\d{6}$/.test(input.postalCode)) throw new SamedayError("Codul poștal trebuie să conțină 6 cifre.", 400);
+  const locker=orderEasybox(order);
+  if(locker && verifiedLocker && locker.id!==verifiedLocker.id)throw new SamedayError("Easyboxul comenzii s-a modificat. Reîncarcă înainte de emitere.",409);
+  const destination=verifiedLocker??locker;
+  if(destination && payment.cashOnDeliveryBani>0 && destination.supportedPayment===false)throw new SamedayError("Easyboxul nu acceptă plata la ridicare.",409);
   return {
     pickupPoint: input.pickupPoint, packageType: 0, packageNumber: 1,
     packageWeight: input.weight, parcels: [{ weight: input.weight }],
     service: input.service, awbPayment: 1, cashOnDelivery: payment.cashOnDeliveryBani / 100, insuredValue: 0, thirdPartyPickup: 0,
     awbRecipient: {
       name: input.name, phoneNumber: input.phone, personType: 0,
-      countyString: input.county, cityString: input.city, address: input.address,
-      postalCode: input.postalCode || undefined, email: order.customerEmail || undefined,
+      countyString: destination?.county??input.county, cityString: destination?.city??input.city, address: destination?.address??input.address,
+      postalCode: (destination?.postalCode??input.postalCode) || undefined, email: order.customerEmail || undefined,
     },
+    ...(destination?{lockerLastMile:destination.id}:{}),
     clientInternalReference: order.reference,
   };
 }
@@ -76,6 +89,10 @@ export async function createOrderShipment(cms: Payload, orderID: number, value: 
   const options = await samedayOptions(fetcher);
   if (!options.pickupPoints.some(p => p.id === input.pickupPoint) || !options.services.some(s => s.id === input.service))
     throw new SamedayError("Punctul de ridicare sau serviciul nu aparține contului Sameday.", 400);
+  const original=await cms.findByID({collection:"orders",id:orderID,depth:0});
+  const selectedLocker=orderEasybox(original);
+  if(selectedLocker && config.environment!=="production")throw new SamedayError("Easyboxul ales pe harta publică necesită configurația Sameday de producție.",409);
+  const verifiedLocker=selectedLocker ? await samedayLocker(selectedLocker.id,fetcher):undefined;
   const attempt = randomUUID();
   const body = await transaction(cms, async id => {
     const order = await cms.findByID({ collection: "orders", id: orderID, depth: 0, req: { transactionID: id } });
@@ -91,7 +108,10 @@ export async function createOrderShipment(cms: Payload, orderID: number, value: 
     }
     // Reload after obtaining the checkout/admin order lock.
     const fresh = await cms.findByID({ collection: "orders", id: orderID, depth: 0, req: { transactionID: id } });
-    const request = shipmentBody(fresh, input);
+    const expected=orderEasybox(fresh)?"easybox":"address";
+    if(options.services.find(service=>service.id===input.service)?.deliveryMethod!==expected)
+      throw new SamedayError("Serviciul Sameday trebuie să corespundă livrării din comandă: adresă sau easybox.",400);
+    const request = shipmentBody(fresh, input, verifiedLocker);
     await connection.execute(sql`INSERT INTO order_shipments
       (order_id, environment, account_hash, attempt_id, state, request)
       VALUES (${orderID}, ${config.environment}, ${config.account}, ${attempt}, 'sending', ${JSON.stringify(request)}::jsonb)
