@@ -2,6 +2,7 @@ import { APIError, type CollectionConfig, type Field, type Where } from "payload
 import { sql, type PostgresAdapter } from "@payloadcms/db-postgres";
 import { adminOnly, nobody } from "./access";
 import { queueOrderStatusEmail } from "../lib/order-status-email";
+import { queueMerchantOrderEmail } from "../lib/merchant-order-email";
 import { mediaStorageErrorMessage } from "../lib/media-storage-error";
 
 const protectedAccess = {
@@ -305,7 +306,7 @@ export const Orders: CollectionConfig = {
     ],
   },
   hooks: {
-    afterChange: [queueOrderStatusEmail],
+    afterChange: [queueOrderStatusEmail, queueMerchantOrderEmail],
     beforeOperation: [
       async ({ operation, args, req }) => {
         if (operation !== "update") return;

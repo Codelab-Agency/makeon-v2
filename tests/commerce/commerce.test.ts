@@ -89,6 +89,8 @@ before(async () => {
   const notifications = await import('../../src/migrations/20261011_120000_order_status_emails');
   await adapter.drizzle.execute(sql`DROP TABLE IF EXISTS order_status_emails`);
   await notifications.up({ db: adapter.drizzle } as Parameters<typeof notifications.up>[0]);
+  const merchantEmails = await import('../../src/migrations/20261105_120000_merchant_order_emails');
+  await merchantEmails.up({ db: adapter.drizzle } as Parameters<typeof merchantEmails.up>[0]);
   const reservations = await import('../../src/migrations/20261029_140000_checkout_reservations');
   await reservations.up({ db: adapter.drizzle } as Parameters<typeof reservations.up>[0]);
   commerce = await import('../../src/lib/commerce');
@@ -746,5 +748,90 @@ test('card, COD and made-to-order checkouts persist the verified easybox and ser
     assert.equal(saved.status,'requested');
     assert.deepEqual((saved.checkoutDetails as unknown as import('../../src/lib/checkout-details').CheckoutDetails).shipping.locker,locker);
     const inventory=await cms.findByID({collection:'products',id:p.id});assert.equal(inventory.stock,2);assert.equal(inventory.reserved,0);
+  }finally{for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
+});
+
+test('new order emails queue once for paid card, COD and requests; abandoned checkout never queues', async () => {
+  const db=(cms.db as unknown as PostgresAdapter).drizzle;
+  const events=async(id:number)=> (await db.execute(sql`SELECT * FROM order_status_emails WHERE order_id=${id} AND audience='merchant'`)).rows;
+  const p=await product(5),cardKey=randomUUID();
+  await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],cardKey,fakeStripe,cms,legal.version,checkoutDetails('card'));
+  assert.equal((await cms.count({collection:'orders',where:{reference:{equals:`MK-${cardKey}`}}})).totalDocs,0);
+  assert.equal((await db.execute(sql`SELECT * FROM order_status_emails WHERE body->>'subject' LIKE ${`%MK-${cardKey}%`}`)).rows.length,0);
+  const paid={...keys.get(`MK-${cardKey}`)!,status:'complete',payment_status:'paid'} as Stripe.Checkout.Session;
+  await commerce.applySession(paid,cms); await commerce.applySession(paid,cms);
+  const card=(await cms.find({collection:'orders',where:{reference:{equals:`MK-${cardKey}`}}})).docs[0];
+  assert.equal((await events(card.id)).length,1);
+  const codKey=randomUUID();
+  for(let i=0;i<2;i++)await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],codKey,fakeStripe,cms,legal.version,checkoutDetails('cod'));
+  const cod=(await cms.find({collection:'orders',where:{reference:{equals:`MK-${codKey}`}}})).docs[0];
+  assert.equal((await events(cod.id)).length,1);
+  const {parseProductionRequest,createProductionRequest}=await import('../../src/lib/production-orders');
+  const input=parseProductionRequest({key:randomUUID(),details:checkoutDetails('card'),items:[{slug:p.slug,grind:'Boabe',quantity:9}]});
+  const request=await createProductionRequest(input,cms);await createProductionRequest(input,cms);
+  const requested=(await cms.find({collection:'orders',where:{reference:{equals:request.reference}}})).docs[0];
+  assert.equal((await events(requested.id)).length,1);
+  await cms.update({collection:'orders',id:requested.id,data:{status:'paid'}});
+  assert.equal((await events(requested.id)).length,1);
+  const reference=`MK-${randomUUID()}`;
+  await assert.rejects(commerce.transaction(cms,async transactionID=>{
+    const {id:_,createdAt:__,updatedAt:___,...data}=cod;
+    await cms.create({collection:'orders',req:{transactionID},data:{...data,reference,items:data.items.map(({id:_,...item})=>item)}});
+    throw new Error('rollback fixture');
+  }),/rollback fixture/);
+  assert.equal((await db.execute(sql`SELECT * FROM order_status_emails WHERE body->>'subject' LIKE ${`%${reference}%`}`)).rows.length,0);
+});
+
+test('merchant delivery preserves snapshot and idempotency after timeout and concurrent retries',async()=>{
+  const names=['RESEND_API_KEY','RESEND_FROM_EMAIL','ORDER_NOTIFICATION_EMAIL_TO','CONTACT_EMAIL_TO'];
+  const previous=Object.fromEntries(names.map(name=>[name,process.env[name]]));
+  Object.assign(process.env,{RESEND_API_KEY:'fake-key',RESEND_FROM_EMAIL:'Makeon <orders@example.test>',ORDER_NOTIFICATION_EMAIL_TO:'owner@example.test'});
+  try{
+    const p=await product(2),key=randomUUID();
+    const details=checkoutDetails('cod');details.contact.name='<script>Test</script>';
+    await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],key,fakeStripe,cms,legal.version,details);
+    const order=(await cms.find({collection:'orders',where:{reference:{equals:`MK-${key}`}}})).docs[0];
+    const emails=await import('../../src/lib/order-status-email');
+    const requests:RequestInit[]=[];
+    await emails.deliverOrderStatusEmails(cms,order.id,(async(_url,init)=>{requests.push(init!);throw new Error('timeout');}) as typeof fetch);
+    process.env.ORDER_NOTIFICATION_EMAIL_TO='different@example.test';
+    const fetcher=(async(_url:unknown,init:RequestInit)=>{requests.push(init);return Response.json({id:'fake-email-id'});}) as typeof fetch;
+    await Promise.all([emails.deliverOrderStatusEmails(cms,order.id,fetcher),emails.deliverOrderStatusEmails(cms,order.id,fetcher)]);
+    await emails.deliverOrderStatusEmails(cms,order.id,fetcher);
+    assert.equal(requests.length,2);
+    assert.deepEqual(requests[0].headers,requests[1].headers);
+    assert.equal(requests[0].body,requests[1].body);
+    const body=JSON.parse(String(requests[0].body));
+    assert.deepEqual(body.to,['owner@example.test']);
+    assert.ok(body.html.includes('&lt;script&gt;Test&lt;/script&gt;'));assert.ok(!body.html.includes('<script>'));
+    assert.ok(body.text.includes('Ramburs de încasat'));assert.ok(body.text.includes(`/admin/collections/orders/${order.id}`));
+    const history=await emails.orderStatusEmailHistory(cms,order.id);
+    assert.equal(history[0].audience,'merchant');assert.equal(history[0].state,'sent');
+  }finally{for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
+});
+
+test('an unconfigured merchant recipient does not block customer status emails and can be retried later',async()=>{
+  const names=['RESEND_API_KEY','RESEND_FROM_EMAIL','ORDER_NOTIFICATION_EMAIL_TO','CONTACT_EMAIL_TO'];
+  const previous=Object.fromEntries(names.map(name=>[name,process.env[name]]));
+  Object.assign(process.env,{RESEND_API_KEY:'fake-key',RESEND_FROM_EMAIL:'Makeon <orders@example.test>'});
+  delete process.env.ORDER_NOTIFICATION_EMAIL_TO;delete process.env.CONTACT_EMAIL_TO;
+  try{
+    const p=await product(2),key=randomUUID();
+    await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],key,fakeStripe,cms,legal.version,checkoutDetails('cod'));
+    const order=(await cms.find({collection:'orders',where:{reference:{equals:`MK-${key}`}}})).docs[0];
+    await cms.update({collection:'orders',id:order.id,data:{fulfillmentStatus:'processing'},req:{user:{id:999,collection:'users',email:'admin@example.test',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()},context:{skipStatusEmailDispatch:true}}});
+    const emails=await import('../../src/lib/order-status-email');
+    const recipients:string[][]=[];
+    const fetcher=(async(_url:unknown,init:RequestInit)=>{recipients.push(JSON.parse(String(init.body)).to);return Response.json({id:'fake-id'});}) as typeof fetch;
+    await emails.deliverOrderStatusEmails(cms,order.id,fetcher);
+    assert.deepEqual(recipients,[['client@example.test']]);
+    let history=await emails.orderStatusEmailHistory(cms,order.id);
+    assert.equal(history.find(event=>event.audience==='merchant')?.state,'failed');
+    assert.equal(history.find(event=>event.audience==='customer')?.state,'sent');
+    process.env.CONTACT_EMAIL_TO='owner@example.test';
+    await emails.deliverOrderStatusEmails(cms,order.id,fetcher);
+    assert.deepEqual(recipients,[['client@example.test'],['owner@example.test']]);
+    history=await emails.orderStatusEmailHistory(cms,order.id);
+    assert.ok(history.every(event=>event.state==='sent'));
   }finally{for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
 });

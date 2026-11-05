@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type Notification = { id: number; status: string; state: string; error: string | null; sentAt: string | null; createdAt: string; leaseUntil: string | null };
+type Notification = { id: number; status: string; audience?: string; state: string; error: string | null; sentAt: string | null; createdAt: string; leaseUntil: string | null };
 const statusLabels: Record<string, string> = { new: "Nouă", processing: "În pregătire", shipped: "Expediată", delivered: "Livrată" };
 const emailLabels: Record<string, string> = { pending: "În așteptare", sending: "Se trimite", sent: "Trimis", failed: "Neconfirmat", blocked: "Necesită verificare", skipped: "Netrimis" };
 
@@ -32,13 +32,13 @@ export default function OrderStatusNotifications({ orderID, updatedAt }: { order
   const pending = notifications.some(item => item.state === "pending" || item.state === "failed" ||
     (item.state === "sending" && item.leaseUntil && new Date(item.leaseUntil).getTime() < Date.now()));
   return (
-    <section className="makeon-order-panel makeon-status-emails" aria-label="Notificări client">
-      <h3>Notificări client</h3>
-      <p>La schimbarea statusului se trimite un email clientului. „Trimis” confirmă acceptarea de către serviciul de email.</p>
+    <section className="makeon-order-panel makeon-status-emails" aria-label="Notificări email">
+      <h3>Notificări email</h3>
+      <p>Comenzile noi sunt trimise echipei Makeon, iar schimbările de status sunt trimise clientului. „Trimis” confirmă acceptarea de către serviciul de email.</p>
       {error && <p role="alert">{error}</p>}
       {!notifications.length && !error && <p>Nu există notificări pentru această comandă.</p>}
       <ul>{notifications.map(item => <li key={item.id}>
-        <div><strong>{statusLabels[item.status]}</strong><span>{emailLabels[item.state]}</span></div>
+        <div><strong>{item.audience === "merchant" ? "Echipa Makeon · Comandă nouă" : `Client · ${statusLabels[item.status]}`}</strong><span>{emailLabels[item.state]}</span></div>
         {item.error && <p>{item.error}</p>}
       </li>)}</ul>
       {pending && <button type="button" className="btn btn--style-primary" disabled={busy} onClick={async () => {

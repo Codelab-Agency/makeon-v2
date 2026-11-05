@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { sql, type PostgresAdapter } from "@payloadcms/db-postgres";
-import type { CollectionAfterChangeHook, Payload } from "payload";
+import type { CollectionAfterChangeHook, Payload, PayloadRequest } from "payload";
 import { after } from "next/server";
 import { transaction, transactionDB } from "./commerce";
 
@@ -50,29 +50,33 @@ export const queueOrderStatusEmail: CollectionAfterChangeHook = async ({ doc, pr
     INSERT INTO order_status_emails (event_id, order_id, target_status, body, state, error)
     VALUES (${randomUUID()}, ${doc.id}, ${doc.fulfillmentStatus}, ${JSON.stringify(body)}::jsonb,
       ${valid ? "pending" : "skipped"}, ${valid ? null : "Comanda nu are o adresă de email validă."})`);
+  scheduleOrderEmails(req, Number(doc.id));
+  return doc;
+};
+
+export function scheduleOrderEmails(req: PayloadRequest, orderID: number) {
   // Next.after runs after Payload commits and the HTTP response is finished. Local
   // API scripts have no request lifecycle; they can drain the persisted queue explicitly.
   if (!req.context.skipStatusEmailDispatch) {
     try {
       after(async () => {
-        try { await deliverOrderStatusEmails(req.payload, Number(doc.id)); }
+        try { await deliverOrderStatusEmails(req.payload, orderID); }
         catch { req.payload.logger.error("Order status email dispatch failed; notification remains in queue."); }
       });
     } catch {
       req.payload.logger.warn("Order status notification queued outside an HTTP request; dispatch explicitly.");
     }
   }
-  return doc;
-};
+}
 
 /** Atomic leases serialize workers across instances, while durable keys cover uncertain sends. */
-async function claim(cms: Payload, orderID: number) {
+async function claim(cms: Payload, orderID: number, audience: "customer" | "merchant") {
   return transaction(cms, async transactionID => {
     const connection = transactionDB(cms, transactionID);
     await connection.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${'status-email:' + orderID}))`);
     const [event] = rows(await connection.execute(sql`
       SELECT *, now() AS db_now FROM order_status_emails WHERE order_id = ${orderID}
-      AND state NOT IN ('sent', 'skipped') ORDER BY id LIMIT 1 FOR UPDATE`));
+      AND audience = ${audience} AND state NOT IN ('sent', 'skipped') ORDER BY id LIMIT 1 FOR UPDATE`));
     if (!event || event.state === "blocked") return null;
     const now = new Date(String(event.db_now)).getTime();
     if (event.state === "sending" && new Date(String(event.lease_until)).getTime() > now) return null;
@@ -83,10 +87,19 @@ async function claim(cms: Payload, orderID: number) {
       return null;
     }
     const body = event.body as EmailBody;
+    if (audience === "merchant" && !body.to.length) {
+      const recipient = (process.env.ORDER_NOTIFICATION_EMAIL_TO || process.env.CONTACT_EMAIL_TO || "").trim();
+      if (recipient) body.to = [recipient];
+    }
+    if (!body.to.length || body.to.some(to => !/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(to))) {
+      await connection.execute(sql`UPDATE order_status_emails SET state = 'failed',
+        error = 'Configurează o adresă validă pentru destinatarul notificării.' WHERE id = ${event.id}`);
+      return null;
+    }
     const from = body.from || process.env.RESEND_FROM_EMAIL;
     if (!process.env.RESEND_API_KEY || !from || /@resend\.dev\b/i.test(from)) {
       await connection.execute(sql`UPDATE order_status_emails SET state = 'failed',
-        error = 'Configurează Resend și un expeditor de pe un domeniu verificat pentru notificările clienților.' WHERE id = ${event.id}`);
+        error = 'Configurează Resend și un expeditor de pe un domeniu verificat pentru notificări.' WHERE id = ${event.id}`);
       return null;
     }
     body.from = from;
@@ -101,9 +114,11 @@ async function claim(cms: Payload, orderID: number) {
 
 /** Runs only against committed events; no customer email is sent inside a database transaction. */
 export async function deliverOrderStatusEmails(cms: Payload, orderID: number, fetcher: typeof fetch = fetch) {
+  // A failed merchant delivery must not prevent customer status notifications (or vice versa).
+  for (const audience of ["merchant", "customer"] as const) {
   for (let count = 0; count < 5; count++) {
-    const event = await claim(cms, orderID);
-    if (!event) return;
+    const event = await claim(cms, orderID, audience);
+    if (!event) break;
     let providerID: string | null = null;
     try {
       const response = await fetcher("https://api.resend.com/emails", {
@@ -119,12 +134,13 @@ export async function deliverOrderStatusEmails(cms: Payload, orderID: number, fe
       provider_id = ${providerID}, sent_at = ${providerID ? new Date().toISOString() : null}, lease_until = NULL,
       error = ${providerID ? null : "Trimiterea nu a fost confirmată. Verifică expeditorul Resend și reîncearcă."}
       WHERE id = ${event.id} AND attempt_token = ${event.token} AND state = 'sending'`);
-    if (!providerID) return;
+    if (!providerID) break;
+  }
   }
 }
 
 export async function orderStatusEmailHistory(cms: Payload, orderID: number) {
-  return rows(await db(cms).execute(sql`SELECT id, target_status AS status, state, error,
+  return rows(await db(cms).execute(sql`SELECT id, target_status AS status, audience, state, error,
     sent_at AS "sentAt", created_at AS "createdAt", lease_until AS "leaseUntil"
     FROM order_status_emails WHERE order_id = ${orderID} ORDER BY id DESC LIMIT 10`));
 }

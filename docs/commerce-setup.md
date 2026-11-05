@@ -68,6 +68,14 @@ Folosește fotografii clare și un fundal consecvent. Biblioteca de imagini este
 
 ## Vizualizarea și gestionarea comenzilor
 
+### Email pentru fiecare comandă nouă
+
+Echipa Makeon primește automat un email când o comandă din stoc este plătită cu cardul, când clientul trimite o comandă ramburs sau când înregistrează o comandă la cerere. Checkout-urile abandonate nu trimit notificări. Emailul conține datele clientului, produsele, livrarea, facturarea, plata și linkul către comandă în admin. Pentru comenzile la cerere, valorile sunt prezentate ca estimative, iar transportul se confirmă telefonic.
+
+Destinatarul este `ORDER_NOTIFICATION_EMAIL_TO`, dacă este completat, sau adresa existentă `CONTACT_EMAIL_TO`. Se folosesc `RESEND_API_KEY` și expeditorul verificat `RESEND_FROM_EMAIL`. Destinatarul nu este furnizat de browser. Configurează aceleași variabile și în producție. Înainte de publicarea codului rulează `npm run cms:migrate` pentru migrarea aditivă `20261105_120000_merchant_order_emails`; nu notifică retroactiv comenzile existente.
+
+În panoul **Notificări email** apar separat **Echipa Makeon · Comandă nouă** și notificările de status pentru client. Notificarea este salvată în aceeași tranzacție cu comanda și trimisă după finalizarea cererii HTTP. Dacă serviciul de email nu confirmă trimiterea, comanda rămâne înregistrată și notificarea poate fi reîncercată din admin, cu același mesaj și aceeași cheie de protecție contra duplicatelor. După expirarea ferestrei de protecție, verifică trimiterea în Resend înainte de o nouă încercare. „Trimis” confirmă acceptarea de către Resend, fără a garanta sosirea în inbox.
+
 Deschide **Comenzi** și selectează o comandă. Pagina afișează clientul, datele de contact, adresa de livrare, produsele, cantitățile, transportul și totalul în lei.
 
 Există două statusuri diferite:
