@@ -41,6 +41,8 @@ export function shippingInput(value: unknown) {
       throw new SamedayError("Completează corect datele destinatarului.", 400);
     return v;
   };
+  if (body.personalDropoff !== undefined && typeof body.personalDropoff !== "boolean")
+    throw new SamedayError("Alege corect metoda de predare a coletului.", 400);
   const weight = body.weight;
   if (typeof weight !== "number" || !Number.isFinite(weight) || weight < 0.01 || weight > 31.5)
     throw new SamedayError("Greutatea unui colet trebuie să fie între 0,01 și 31,5 kg.", 400);
@@ -50,6 +52,7 @@ export function shippingInput(value: unknown) {
   if (!/^[+\d\s().-]+$/.test(phone) || phone.replace(/\D/g, "").length < 7)
     throw new SamedayError("Telefonul destinatarului nu este valid.", 400);
   return {
+    personalDropoff: body.personalDropoff === true,
     weight, pickupPoint: Number(body.pickupPoint), service: Number(body.service),
     name: text("name", 100, 2), phone,
     county: text("county", 100), city: text("city", 100), address: text("address", 250, 5),
@@ -78,6 +81,7 @@ export function shipmentBody(order: Order, input: ReturnType<typeof shippingInpu
       postalCode: (destination?.postalCode??input.postalCode) || undefined, email: order.customerEmail || undefined,
     },
     ...(destination?{lockerLastMile:destination.id}:{}),
+    ...(input.personalDropoff ? { serviceTaxes: ["PDO"] } : {}),
     clientInternalReference: order.reference,
   };
 }
@@ -89,6 +93,8 @@ export async function createOrderShipment(cms: Payload, orderID: number, value: 
   const options = await samedayOptions(fetcher);
   if (!options.pickupPoints.some(p => p.id === input.pickupPoint) || !options.services.some(s => s.id === input.service))
     throw new SamedayError("Punctul de ridicare sau serviciul nu aparține contului Sameday.", 400);
+  if (input.personalDropoff && !options.services.find(service => service.id === input.service)?.personalDropoff)
+    throw new SamedayError("Serviciul ales nu are activată opțiunea de predare personală (PDO). Cere Sameday activarea ei pe contractul tău sau alege preluarea de către curier.", 400);
   const original=await cms.findByID({collection:"orders",id:orderID,depth:0});
   const selectedLocker=orderEasybox(original);
   if(selectedLocker && config.environment!=="production")throw new SamedayError("Easyboxul ales pe harta publică necesită configurația Sameday de producție.",409);

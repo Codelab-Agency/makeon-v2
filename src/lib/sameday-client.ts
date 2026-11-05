@@ -80,7 +80,7 @@ async function request(path: string, body?: Record<string, unknown>, fetcher: Fe
   return response;
 }
 
-export type ShippingOption = { id: number; name: string; deliveryMethod?: "address" | "easybox" };
+export type ShippingOption = { id: number; name: string; deliveryMethod?: "address" | "easybox"; personalDropoff?: boolean };
 export async function samedayOptions(fetcher: Fetcher = fetch) {
   const list = async (path: string) => {
     const items: Record<string, unknown>[] = [];
@@ -97,8 +97,11 @@ export async function samedayOptions(fetcher: Fetcher = fetch) {
   return {
     environment: samedayConfig().environment,
     pickupPoints: points.map((p): ShippingOption => ({ id: Number(p.id), name: String(p.alias || p.name || p.address || `Punct ${p.id}`) })),
-    // IDs are account/environment specific. Domestic locker service is LN.
-    services: services.filter(s => s.serviceCode === "24" || s.serviceCode === "LN").map((s): ShippingOption => ({ id: Number(s.id), name: String(s.name), deliveryMethod: s.serviceCode === "LN" ? "easybox" : "address" })),
+    // Preserve both destination services; PDO independently controls sender dropoff.
+    services: services.filter(s => s.serviceCode === "24" || s.serviceCode === "LN").map((s): ShippingOption => ({
+      id: Number(s.id), name: String(s.name), deliveryMethod: s.serviceCode === "LN" ? "easybox" : "address",
+      personalDropoff: Array.isArray(s.serviceOptionalTaxes) && s.serviceOptionalTaxes.some((tax: Record<string, unknown>) => tax.taxCode === "PDO" && Number(tax.packageType) === 0),
+    })),
   };
 }
 

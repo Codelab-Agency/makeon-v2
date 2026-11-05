@@ -797,3 +797,8 @@ body:has(.makeon-order) .doc-header__title {
 .makeon-cod-confirmation p { margin:0; }
 .makeon-cod-error { color:var(--theme-error-500); }
 @media (max-width:600px) { .makeon-cod-actions { flex-direction:column; } .makeon-cod-actions button { width:100%; } }
+
+.makeon-shipping-dropoff { grid-column:1 / -1; padding:16px; border:1px solid var(--theme-elevation-200); border-radius:8px; }
+.makeon-shipping .makeon-shipping-dropoff label { display:flex; flex-direction:row; align-items:center; gap:10px; cursor:pointer; }
+.makeon-shipping .makeon-shipping-dropoff input[type="checkbox"] { flex:0 0 18px; width:18px; height:18px; min-height:18px; margin:0; padding:0; }
+.makeon-shipping-dropoff p { margin:10px 0 0; }

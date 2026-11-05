@@ -6,7 +6,7 @@ import type { Order } from "@/payload-types";
 import type { CheckoutDetails } from "@/lib/checkout-details";
 
 type Shipment = { state: string; number: string | null; error: string | null; environment: string; canAttach: boolean };
-type Option = { id: number; name: string };
+type Option = { id: number; name: string; personalDropoff?: boolean };
 type Options = { environment: string; pickupPoints: Option[]; services: Option[] };
 const text = (value: unknown) => typeof value === "string" ? value : "";
 
@@ -23,6 +23,7 @@ export default function OrderShipping({ order }: { order: Order }) {
     address: [text(address.line1), text(address.line2)].filter(Boolean).join(", "),
     postalCode: text(address.postal_code), weight: "", pickupPoint: "", service: "",
   });
+  const [personalDropoff, setPersonalDropoff] = useState(true);
   const [shipment, setShipment] = useState<Shipment | null>(null);
   const [payment, setPayment] = useState<ShipmentPayment | null>(null);
   const [options, setOptions] = useState<Options | null>(null);
@@ -101,6 +102,11 @@ export default function OrderShipping({ order }: { order: Order }) {
         {options.environment === "sandbox" && <p><strong>Mediu de test — AWB fără livrare reală.</strong></p>}
         <fieldset disabled={busy} className="makeon-shipping-fields">
           <legend className="makeon-shipping-legend">Date pentru AWB</legend>
+          <div className="makeon-shipping-dropoff">
+            <label htmlFor={`${uid}-dropoff`}><input id={`${uid}-dropoff`} type="checkbox" checked={personalDropoff} onChange={event => setPersonalDropoff(event.target.checked)} />Predăm noi coletul la easybox / SAMEDAY point</label>
+            <p>{personalDropoff ? "Predare personală. După emitere, verifică în eAWB instrucțiunile și codul de predare. Destinația aleasă de client rămâne neschimbată." : "Preluare de către curier de la punctul de ridicare al firmei."}</p>
+            {personalDropoff && fields.service && !options.services.find(service => service.id === Number(fields.service))?.personalDropoff && <p role="alert">Opțiunea PDO nu este disponibilă pentru acest serviciu. Solicită activarea la Sameday sau debifează predarea personală.</p>}
+          </div>
           {([
             ["name", "Destinatar"], ["phone", "Telefon"], ["county", "Județ (denumire completă)"],
             ["city", "Localitate"], ["address", "Stradă, număr și detalii adresă"], ["postalCode", "Cod poștal (opțional)"],
@@ -117,7 +123,7 @@ export default function OrderShipping({ order }: { order: Order }) {
           </label>)}
         </fieldset>
         <p>Modificările de mai sus se aplică doar AWB-ului. Adresa originală a comenzii se păstrează.</p>
-        <button type="button" className="btn btn--style-primary" disabled={busy || !options.pickupPoints.length || !options.services.length} onClick={() => void mutate({ ...fields, weight: Number(fields.weight), pickupPoint: Number(fields.pickupPoint), service: Number(fields.service) })}>
+        <button type="button" className="btn btn--style-primary" disabled={busy || !options.pickupPoints.length || !options.services.length || (personalDropoff && !options.services.find(service => service.id === Number(fields.service))?.personalDropoff)} onClick={() => void mutate({ ...fields, personalDropoff, weight: Number(fields.weight), pickupPoint: Number(fields.pickupPoint), service: Number(fields.service) })}>
           {busy ? "Se emite AWB-ul…" : "Emite AWB pentru această comandă"}
         </button>
       </>}

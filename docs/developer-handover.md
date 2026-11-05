@@ -544,3 +544,7 @@ Apply migration `20261029_120000_payment_methods` before deploying the updated a
 ### Abandoned card checkouts
 
 Order read access exposes only paid orders, COD orders and production requests, including in dashboard counters. Active stock/card snapshots are internal reservation drafts. On return to any shop route, `use-checkout-return.ts` cancels the previous Stripe session (also via persisted `pageshow` on BFCache restore). Expiration atomically releases reserved stock and deletes the stock/card draft and its child items; expiration webhook retries after deletion are harmless. A completed payment wins cancellation races and remains a paid order. Production requests/payment-link attempts are retained. Legacy released `expired`/`failed` stock/card drafts are pruned in batches during catalog/checkout recovery. Browser state never authorizes deletion before Stripe confirms expiration.
+
+### Sameday personal dropoff (PDO)
+
+The admin defaults `personalDropoff` to true on new AWB requests. `/api/client/services` exposes `serviceOptionalTaxes`; only `taxCode: PDO` with parcel `packageType: 0` enables this mode. The server rechecks availability before dispatch and sends `serviceTaxes[0]=PDO` on `/api/awb`, matching the official Sameday WooCommerce plugin's `PERSONAL_DELIVERY_OPTION_CODE` and `AwbGenerateServiceTaxResolver`. No `lockerLastMile`, `lockerFirstMile`, or `oohFirstMile` is invented: this is sender dropoff with unchanged home delivery. Existing durable AWB claims and COD totals are preserved. PIN/QR retrieval is via eAWB, outside this integration.
