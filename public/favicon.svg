@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 55 450 450" fill="none">
+  <rect x="125" y="55" width="450" height="450" rx="72" fill="#faf9f6"/>
+  <title>Makeon — cafea și apă</title>
+  <!-- The outer arc tapers to two separate ends. It never closes below the cup. -->
+  <path d="M248 472C180 438 137 369 137 290C137 174 232 80 348 80C465 80 559 174 559 290C559 369 517 437 454 470C514 427 550 362 550 290C550 181 459 93 348 93C237 93 147 181 147 290C147 363 185 429 248 472Z" fill="#B89A64"/>
+  <!-- Gold flame, with the coffee cup left open on either side. -->
+  <path d="M349 140C365 204 292 248 275 302C255 366 286 419 345 420C395 422 431 390 430 343C430 304 410 274 387 255C410 282 422 312 422 343C422 386 392 410 348 410C295 409 267 367 283 312C299 260 363 208 349 140Z" fill="#B89A64"/>
+  <!-- Water drop. -->
+  <path d="M356 198C350 244 313 266 292 298C273 326 277 358 296 379C301 384 307 382 309 374C306 343 324 323 352 308C385 291 387 263 367 224C362 214 359 205 356 198Z" fill="#21313D"/>
+  <path d="M356 207C347 250 313 272 297 301C282 326 285 351 297 365C300 334 321 313 348 298C375 283 379 261 363 227C360 220 358 213 356 207Z" fill="#2D5C87"/>
+  <!-- Roasted bean and its curved seam. -->
+  <ellipse cx="359" cy="359" rx="39" ry="51" transform="rotate(31 359 359)" fill="#B89A64"/>
+  <ellipse cx="359" cy="359" rx="29" ry="42" transform="rotate(31 359 359)" fill="#563B16"/>
+  <path d="M379 320C378 345 350 353 340 376C336 384 335 390 335 395" stroke="#B89A64" stroke-width="9"/>
+  <!-- One open cup silhouette; the circle above is not joined to its base. -->
+  <path d="M264 382H219C236 444 286 483 348 483C411 483 461 444 477 382H430L427 392H463C445 442 401 473 348 473C295 473 251 442 233 392H264V382Z" fill="#B89A64"/>
+  <path d="M239 400C258 437 297 461 351 463C302 469 259 448 239 400Z" fill="#B89A64"/>
+</svg>
