@@ -4,9 +4,10 @@ import LegalDocument, {
   LegalContact,
 } from "@/components/legal-document";
 import { legal } from "@/lib/legal";
+import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Politica de confidențialitate — Makeon",
+  ...pageMetadata(legal.privacy, "Politica de confidențialitate | Makeon", "Informații despre datele personale prelucrate prin site-ul Makeon, scopurile prelucrării, destinatarii datelor și modalitățile de contact."),
   robots: legal.draft ? { index: false, follow: true } : undefined,
 };
 

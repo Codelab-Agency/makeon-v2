@@ -2,10 +2,11 @@ import ShopShell from "@/components/shop-shell";
 import CheckoutResult from "@/components/checkout-result";
 import { stripeClient, applySession } from "@/lib/commerce";
 import { checkoutConfigured } from "@/lib/commerce-env";
+import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Comanda ta — Makeon",
+  ...pageMetadata("/comanda", "Comanda ta | Makeon", "Confirmarea și statusul comenzii tale Makeon."),
   robots: { index: false, follow: false },
 };
 export default async function Page({

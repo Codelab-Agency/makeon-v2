@@ -2,6 +2,7 @@ export type CoffeeCategory = "boabe" | "macinata" | "solubila" | "alternative" |
 export type DecaffFormat = "boabe" | "macinata";
 export type CoffeeProduct = {
   id?: number;
+  updatedAt?: string;
   stock?: number;
   imageUrl?: string;
   imageAlt?: string;

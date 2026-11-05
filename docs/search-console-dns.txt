@@ -1,0 +1,19 @@
+Google Search Console — makeon.ro
+
+Property type: Domain
+Domain: makeon.ro
+Authoritative DNS: ns1.dataserver.ro, ns2.dataserver.ro, ns3.dataserver.ro, ns4.dataserver.ro
+
+Record type: TXT
+Name / Host: @ (the root makeon.ro, not www)
+Value: google-site-verification=BVPz6I0vRBJr7uB0WMoqJ898rGaLYvq6PHKNZomT7KU
+TTL: provider default
+
+The exact TXT record was confirmed in public DNS on 2026-11-05.
+Keep this record after verification.
+Click Verify inside the owner's Search Console account; DNS presence alone does not confirm that Google has completed account verification.
+
+After deployment and verification, submit:
+https://makeon.ro/sitemap.xml
+
+Then inspect the homepage, service pages, shop and a product URL, run the live test and request indexing.

@@ -1,16 +1,17 @@
-import type { Metadata } from "next";
+import { mainPageMetadata, absoluteUrl, breadcrumbGraph } from "@/lib/seo";
+import { getProducts } from "@/lib/storefront";
+import StructuredData from "@/components/structured-data";
 import CoffeeShop from "@/components/coffee-shop";
 import ShopShell from "@/components/shop-shell";
-import Starburst from "@/components/starburst";
 
-export const metadata: Metadata = {
-  title: "Magazin cafea boabe și măcinată SwitchMORN | Makeon",
-  description:
-    "Descoperă cafeaua SwitchMORN pentru birou și acasă: blenduri și cafele de origine. Alege sortimentul, gramajul și măcinarea potrivite din magazin.",
-};
-export default function CoffeeStore() {
+export const dynamic = "force-dynamic";
+export const metadata = mainPageMetadata("/cafea");
+export default async function CoffeeStore() {
+  const products = await getProducts();
   return (
     <ShopShell>
+      <StructuredData data={breadcrumbGraph([{name:"Makeon",path:"/"},{name:"Magazin cafea",path:"/cafea"}])} />
+      <StructuredData data={{"@context":"https://schema.org","@type":"CollectionPage",name:"Magazin Makeon · Cafea și accesorii",url:absoluteUrl("/cafea"),mainEntity:{"@type":"ItemList",numberOfItems:products.length,itemListElement:products.map((product,index)=>({"@type":"ListItem",position:index+1,name:product.name,url:absoluteUrl(`/cafea/${product.slug}`)}))}}} />
       <div className="shop-banner section-padding">
         <span className="eyebrow">
           PENTRU BIROU. PENTRU ACASĂ. PENTRU TINE.
@@ -22,7 +23,7 @@ export default function CoffeeStore() {
         </h1>
         <p>Cafeaua pe care o iubești, dincolo de pauza de la birou.</p>
       </div>
-      <CoffeeShop full />
+      <CoffeeShop full initialProducts={products} />
     </ShopShell>
   );
 }

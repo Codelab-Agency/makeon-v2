@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import LegalDocument, { LegalContact } from "@/components/legal-document";
 import { legal } from "@/lib/legal";
+import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Politica de cookie-uri — Makeon",
+  ...pageMetadata(legal.cookies, "Politica de cookie-uri | Makeon", "Cum folosește site-ul Makeon cookie-uri și stocarea în browser pentru coș, funcțiile magazinului și serviciile integrate."),
   robots: legal.draft ? { index: false, follow: true } : undefined,
 };
 

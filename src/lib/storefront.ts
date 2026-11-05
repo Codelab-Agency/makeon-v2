@@ -3,6 +3,7 @@ import { coffeeProducts, type CoffeeProduct } from "./coffee-catalog";
 import { cmsConfigured } from "./commerce-env";
 import { getCMS } from "./cms";
 import type { Product } from "@/payload-types";
+import { cache } from "react";
 
 /** Explicit public-field allowlist; expose sellable stock and prefer the card-sized image. */
 export function publicProduct(doc: Product): CoffeeProduct {
@@ -10,6 +11,7 @@ export function publicProduct(doc: Product): CoffeeProduct {
     doc.image && typeof doc.image === "object" ? doc.image : undefined;
   return {
     id: doc.id,
+    updatedAt: doc.updatedAt,
     slug: doc.slug,
     name: doc.name,
     category: doc.category,
@@ -38,7 +40,7 @@ export function publicProduct(doc: Product): CoffeeProduct {
  * propagate rather than silently exposing stale prices. Local API access bypasses
  * admin permissions, so active filtering and public-field mapping are mandatory.
  */
-export async function getProducts(): Promise<CoffeeProduct[]> {
+export const getProducts = cache(async (): Promise<CoffeeProduct[]> => {
   if (!cmsConfigured()) return coffeeProducts;
   const cms = await getCMS();
   const result = await cms.find({
@@ -50,9 +52,9 @@ export async function getProducts(): Promise<CoffeeProduct[]> {
     overrideAccess: true,
   });
   return result.docs.map(publicProduct);
-}
+});
 
-export async function getProduct(slug: string) {
+export const getProduct = cache(async (slug: string) => {
   if (!cmsConfigured()) return coffeeProducts.find((p) => p.slug === slug);
   const cms = await getCMS();
   const result = await cms.find({
@@ -63,4 +65,4 @@ export async function getProduct(slug: string) {
     overrideAccess: true,
   });
   return result.docs[0] ? publicProduct(result.docs[0]) : undefined;
-}
+});

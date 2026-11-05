@@ -38,9 +38,18 @@ import "../home-business.css";
 import CartProvider from "@/components/cart-provider";
 import CatalogProvider from "@/components/catalog-provider";
 import SmoothScroll from "@/components/smooth-scroll";
+import StructuredData from "@/components/structured-data";
+import { mainPageMetadata, organizationGraph, previewDeployment, site } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Makeon — Cafea, apă și echipamente pentru companii",
+  ...mainPageMetadata("/"),
+  metadataBase: new URL(site.url),
+  applicationName: site.name,
+  verification: { google: site.googleVerification },
+  robots: previewDeployment() ? { index: false, follow: false } : {
+    index: true, follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32" },
@@ -48,8 +57,6 @@ export const metadata: Metadata = {
     ],
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
-  description:
-    "Cafea SwitchMORN, espressoare și apă Vero Aqua pentru birouri. Echipamente, aprovizionare, filtrare și cafea la evenimente. Solicită ofertă.",
 };
 
 export default function RootLayout({
@@ -58,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="ro" data-scroll-behavior="smooth">
       <body>
+        <StructuredData data={organizationGraph()} />
         <SmoothScroll />
         <CatalogProvider>
           <CartProvider>{children}</CartProvider>

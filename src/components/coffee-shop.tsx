@@ -29,7 +29,7 @@ import {
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function CoffeeProductCard({ product }: { product: CoffeeProduct }) {
+export function CoffeeProductCard({ product, canAdd = true }: { product: CoffeeProduct; canAdd?: boolean }) {
   const { add } = useCart();
   return (
     <article className="shop-product-card">
@@ -61,6 +61,7 @@ export function CoffeeProductCard({ product }: { product: CoffeeProduct }) {
           ) : (
             <button
               className="shop-add"
+              disabled={!canAdd}
               onClick={() => add(product.slug, defaultProductFormat(product))}
               aria-label={`Adaugă ${product.name} în coș`}
             >
@@ -74,13 +75,15 @@ export function CoffeeProductCard({ product }: { product: CoffeeProduct }) {
   );
 }
 
-export default function CoffeeShop({ full = false }: { full?: boolean }) {
+export default function CoffeeShop({ full = false, initialProducts }: { full?: boolean; initialProducts?: CoffeeProduct[] }) {
   const {
-    products: coffeeProducts,
+    products: liveProducts,
     unavailable,
-    ready,
+    ready: liveReady,
     refresh,
   } = useCatalog();
+  const coffeeProducts = liveReady ? liveProducts : initialProducts ?? [];
+  const ready = liveReady || initialProducts !== undefined;
   const initialFailure = unavailable && coffeeProducts.length === 0;
   const root = useRef<HTMLElement>(null);
   const [category, setCategory] = useState<"all" | CoffeeCategory>("all"),
@@ -269,7 +272,7 @@ export default function CoffeeShop({ full = false }: { full?: boolean }) {
       ) : shown.length ? (
         <div className="shop-grid">
           {shown.map((product) => (
-            <CoffeeProductCard key={product.slug} product={product} />
+            <CoffeeProductCard key={product.slug} product={product} canAdd={liveReady && !unavailable} />
           ))}
         </div>
       ) : (

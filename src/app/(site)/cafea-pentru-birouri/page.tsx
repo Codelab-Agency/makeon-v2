@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import { mainPageMetadata, serviceGraph, breadcrumbGraph } from "@/lib/seo";
+import StructuredData from "@/components/structured-data";
 import MakeonLanding from "@/components/makeon-landing";
 
-export const metadata: Metadata = {
-  title: "Cafea de origine pentru birouri | Makeon",
-  description: "Cafea de origine proaspăt prăjită, livrată direct din prăjitorie. Espressoare în comodat, dimensionate după numărul de angajați, livrări regulate și service pentru biroul tău.",
-};
+export const metadata = mainPageMetadata("/cafea-pentru-birouri");
 
 export default function OfficeCoffeePage() {
-  return <MakeonLanding key="office-coffee" dedicatedCoffee />;
+  return <><StructuredData data={serviceGraph("/cafea-pentru-birouri", "Cafea de origine pentru birouri", "Cafea proaspăt prăjită, espressoare în comodat, aprovizionare și service")} /><StructuredData data={breadcrumbGraph([{name:"Makeon",path:"/"},{name:"Cafea pentru birouri",path:"/cafea-pentru-birouri"}])} /><MakeonLanding key="office-coffee" dedicatedCoffee /></>;
 }

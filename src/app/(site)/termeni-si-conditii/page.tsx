@@ -4,9 +4,10 @@ import LegalDocument, {
   LegalContact,
 } from "@/components/legal-document";
 import { legal } from "@/lib/legal";
+import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Termeni și condiții — Makeon",
+  ...pageMetadata(legal.terms, "Termeni și condiții | Makeon", "Informații despre comenzile Makeon: produse, prețuri, metode de plată, livrare și condițiile comerciale prezentate pe site."),
   robots: legal.draft ? { index: false, follow: true } : undefined,
 };
 
