@@ -2,7 +2,7 @@
  * bump the terms version when publishing a materially revised document.
  */
 export const legal = {
-  version: "2026-11-06",
+  version: "2026-11-06.1",
   updated: "6 noiembrie 2026",
   draft: true,
   company: {
@@ -17,6 +17,7 @@ export const legal = {
   terms: "/termeni-si-conditii",
   privacy: "/politica-de-confidentialitate",
   cookies: "/politica-de-cookie-uri",
+  returns: "/politica-de-retur",
   sal: "https://reclamatiisal.anpc.ro/",
   anpc: "https://anpc.ro/",
 } as const;

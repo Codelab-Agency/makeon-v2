@@ -60,7 +60,8 @@ test("sitemap discovers active products and excludes checkout, API and draft pol
   expect(productPaths.length).toBeGreaterThan(0);
   for(const path of productPaths)expect(urls).toContain(`https://makeon.ro${path}`);
   expect(new Set(urls).size).toBe(urls.length);
-  expect(xml).not.toMatch(/finalizare-comanda|politica-de-|termeni-si-conditii|\/api\/|\/admin/);
+  expect(xml).not.toMatch(/finalizare-comanda|politica-de-confidentialitate|politica-de-cookie-uri|termeni-si-conditii|\/api\/|\/admin/);
+  expect(urls).toContain('https://makeon.ro/politica-de-retur');
   expect(xml).toContain("<lastmod>");
   const robots=await request.get("/robots.txt").then(response=>response.text());
   expect(robots).toContain("Sitemap: https://makeon.ro/sitemap.xml");
@@ -71,6 +72,22 @@ test("sitemap discovers active products and excludes checkout, API and draft pol
     const html=await request.get(path).then(response=>response.text());
     expect(html).toMatch(/name="robots" content="noindex/);
   }
+});
+
+test("the approved return policy is public and matches the organization policy link", async ({ request }) => {
+  const response=await request.get('/politica-de-retur');
+  expect(response.status()).toBe(200);
+  const html=await response.text();
+  const visible=html.replace(/<script\b[\s\S]*?<\/script>/gi,'');
+  expect(visible).toContain('VENDING STORE IMPEX SRL');
+  expect(visible).toContain('040556');
+  expect(visible).toContain('14 zile');
+  expect(visible).toContain('Model opțional de notificare');
+  expect(visible).not.toContain('Versiune de lucru');
+  expect(html).not.toMatch(/name="robots" content="noindex/);
+  const graphs=[...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match=>JSON.parse(match[1]));
+  const organization=graphs.flatMap(graph=>graph['@graph']||[]).find(entity=>entity['@type']==='Organization');
+  expect(organization.hasMerchantReturnPolicy.merchantReturnLink).toBe('https://makeon.ro/politica-de-retur');
 });
 
 test("server-rendered browsing stays visible while purchase controls wait for the live catalog", async ({ page }) => {

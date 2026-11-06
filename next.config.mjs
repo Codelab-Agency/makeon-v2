@@ -5,7 +5,7 @@ export default withPayload({
   async redirects() {
     // Canonicalize public HTML only. Do not redirect Stripe webhooks or admin/API POSTs.
     const pages = ['/', '/cafea/:path*', '/cafea-pentru-birouri', '/apa', '/prajitoria', '/cafea-la-evenimente',
-      '/termeni-si-conditii', '/politica-de-confidentialitate', '/politica-de-cookie-uri'];
+      '/termeni-si-conditii', '/politica-de-confidentialitate', '/politica-de-cookie-uri', '/politica-de-retur'];
     return pages.map(source => ({ source, has: [{ type: 'host', value: 'www.makeon.ro' }],
       destination: `https://makeon.ro${source}`, permanent: true }));
   },

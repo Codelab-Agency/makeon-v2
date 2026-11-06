@@ -5,6 +5,7 @@ import LegalDocument, {
 } from "@/components/legal-document";
 import { legal } from "@/lib/legal";
 import { pageMetadata } from "@/lib/seo";
+import ReturnPolicy from "@/components/return-policy";
 
 export const metadata: Metadata = {
   ...pageMetadata(legal.terms, "Termeni și condiții | Makeon", "Informații despre comenzile Makeon: produse, prețuri, metode de plată, livrare și condițiile comerciale prezentate pe site."),
@@ -94,27 +95,8 @@ export default function TermsPage() {
       </section>
       <section id="retragere">
         <h2>7. Retragere, retur și neconformități</h2>
-        <p>
-          Consumatorii beneficiază, în situațiile prevăzute de OUG nr. 34/2014,
-          de un termen de 14 zile de la primirea bunurilor pentru a comunica
-          retragerea, fără justificarea deciziei. Notificarea poate fi transmisă
-          printr-o declarație clară la adresa de e-mail de contact, cu
-          identificarea comenzii. Adresa și procedura operațională de retur
-          trebuie completate înainte de lansare.
-        </p>
-        <p>
-          Excepțiile legale se aplică numai când condițiile lor sunt
-          îndeplinite, inclusiv pentru bunuri clar personalizate sau care se pot
-          deteriora ori expira rapid. Simplul fapt că o cafea este aliment sau
-          este pregătită după comandă nu exclude automat dreptul de retragere.
-        </p>
-        <p>
-          Bunurile se returnează în termenul legal de la notificare. Rambursarea
-          și eventualele costuri de retur se stabilesc conform legii și
-          informațiilor comunicate înainte de comandă. Pentru produse
-          deteriorate, greșite sau neconforme, contactează-ne; drepturile legale
-          ale consumatorului rămân aplicabile.
-        </p>
+        <p>Politica este disponibilă și separat, pe pagina <a href={legal.returns}>Retur și rambursare</a>.</p>
+        <ReturnPolicy />
       </section>
       <section>
         <h2>8. Echipamente și garanții</h2>

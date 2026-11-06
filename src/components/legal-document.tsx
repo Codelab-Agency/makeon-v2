@@ -47,12 +47,6 @@ export default function LegalDocument({
         <span className="eyebrow">Informații legale</span>
         <h1>{title}</h1>
         <p className="legal-updated">Ultima actualizare: {legal.updated}</p>
-        {legal.draft && (
-          <aside className="legal-draft">
-            Versiune de lucru. Condițiile comerciale și procedurile de
-            prelucrare a datelor sunt în curs de confirmare.
-          </aside>
-        )}
         {children}
       </article>
     </ShopShell>

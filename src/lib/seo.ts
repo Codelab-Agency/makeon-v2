@@ -73,6 +73,7 @@ export function organizationGraph() {
       identifier: { "@type": "PropertyValue", propertyID: "Registrul Comerțului", value: legal.company.registration },
       logo: { "@type": "ImageObject", url: absoluteUrl("/images/makeon-logo-preview.png") },
       email: legal.email, telephone: legal.phone, description: seoPages["/"].description,
+      hasMerchantReturnPolicy: { "@type": "MerchantReturnPolicy", merchantReturnLink: absoluteUrl(legal.returns) },
       brand: [{ "@type": "Brand", name: "SwitchMORN Coffee" }, { "@type": "Brand", name: "Vero Aqua" }],
     },
     { "@type": "WebSite", "@id": `${site.url}/#website`, url: site.url, name: site.name, inLanguage: site.language,
