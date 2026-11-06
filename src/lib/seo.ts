@@ -3,6 +3,7 @@ import type { CoffeeProduct } from "./coffee-catalog";
 import { categoryLabel } from "./coffee-catalog";
 import { packageLabel } from "./product-format";
 import { legal } from "./legal";
+import { productBrand, gtinSchemaFields } from "./product-identifiers";
 
 export const site = {
   name: "Makeon",
@@ -90,16 +91,25 @@ export function serviceGraph(path: keyof typeof seoPages, name: string, serviceT
   };
 }
 
-export function productGraph(product: CoffeeProduct) {
+export function productGraph(product: CoffeeProduct, shippingBani?: number) {
   const url = absoluteUrl(`/cafea/${product.slug}`);
+  const brand = productBrand(product);
+  const image = product.imageOriginalUrl || product.imageUrl;
   return { "@context": "https://schema.org", "@type": "Product", "@id": `${url}#product`, url,
     name: `${product.name} · ${packageLabel(product)}`, description: product.description,
     category: categoryLabel(product.category), sku: product.slug,
-    ...(product.imageUrl ? { image: [absoluteUrl(product.imageUrl)] } : {}),
-    ...(product.category !== "complementare" ? { brand: { "@type": "Brand", name: "SwitchMORN Coffee" } } : {}),
+    ...(image ? { image: [absoluteUrl(image)] } : {}),
+    ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
+    ...gtinSchemaFields(product.gtin),
+    ...(product.mpn ? { mpn: product.mpn } : {}),
     ...(typeof product.price === "number" && Number.isFinite(product.price) && product.price > 0 ? { offers: {
       "@type": "Offer", url, priceCurrency: "RON", price: product.price.toFixed(2),
-      ...(typeof product.stock === "number" ? { availability: `https://schema.org/${product.stock > 0 ? "InStock" : "BackOrder"}` } : {}),
+      ...(typeof product.stock === "number" ? { availability: `https://schema.org/${product.stock > 0 ? "InStock" : "OutOfStock"}` } : {}),
+      itemCondition: "https://schema.org/NewCondition",
+      ...(shippingBani !== undefined && Number.isSafeInteger(shippingBani) && shippingBani >= 0 ? { shippingDetails: {
+        "@type": "OfferShippingDetails", shippingDestination: { "@type": "DefinedRegion", addressCountry: "RO" },
+        shippingRate: { "@type": "MonetaryAmount", currency: "RON", value: (shippingBani / 100).toFixed(2) },
+      } } : {}),
       seller: { "@id": `${site.url}/#organization` },
     } } : {}),
   };

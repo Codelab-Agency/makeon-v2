@@ -23,7 +23,7 @@ test("product schema uses actual prices and inventory, without invented free pri
   const base={...coffeeProducts[0],price:49.99,stock:5};
   assert.equal(productGraph(base).offers?.price,'49.99');
   assert.equal(productGraph(base).offers?.availability,'https://schema.org/InStock');
-  assert.equal(productGraph({...base,stock:0}).offers?.availability,'https://schema.org/BackOrder');
+  assert.equal(productGraph({...base,stock:0}).offers?.availability,'https://schema.org/OutOfStock');
   assert.equal(productGraph({...base,price:null}).offers,undefined);
   assert.equal(productGraph({...base,price:0}).offers,undefined);
   assert.equal(productGraph({...base,stock:undefined}).offers?.availability,undefined);

@@ -4,6 +4,7 @@ import { adminOnly, nobody } from "./access";
 import { queueOrderStatusEmail } from "../lib/order-status-email";
 import { queueMerchantOrderEmail } from "../lib/merchant-order-email";
 import { mediaStorageErrorMessage } from "../lib/media-storage-error";
+import { validGtin } from "../lib/product-identifiers";
 
 const protectedAccess = {
   create: adminOnly,
@@ -194,6 +195,29 @@ export const Products: CollectionConfig = {
       type: "array",
       admin: {condition: coffeeOnly},
       fields: [{ name: "note", type: "text", required: true }],
+    },
+    {
+      type: "collapsible", label: "Google / Merchant Center", admin: { initCollapsed: true },
+      fields: [
+        { name: "googleEnabled", label: "Include în feedul Google", type: "checkbox", defaultValue: true,
+          admin: { description: "Produsele vizibile cu preț, stoc cunoscut și fotografie pot fi incluse în feed. Aprobarea se verifică în Merchant Center." } },
+        { name: "brand", label: "Marca produsului", type: "text", maxLength: 70,
+          hooks: { beforeValidate: [({value}) => typeof value === "string" ? value.trim() : value] },
+          admin: { description: "Marca reală de pe ambalaj. Pentru cafea, câmpul gol folosește SwitchMORN Coffee. Pentru accesorii, completează marca producătorului dacă există." } },
+        { name: "gtin", label: "EAN / GTIN de pe ambalaj", type: "text", maxLength: 14,
+          hooks: { beforeValidate: [({value}) => typeof value === "string" ? value.replace(/\s/g, "") : value] },
+          validate: (value: string | null | undefined) => !value || validGtin(value) || "Introdu un GTIN valid de 8, 12, 13 sau 14 cifre, cu cifra de control corectă.",
+          admin: { description: "Codul de bare real al acestui ambalaj; păstrează zerourile de la început. Nu folosi un cod inventat sau codul altui gramaj." } },
+        { name: "mpn", label: "Cod producător (MPN)", type: "text", maxLength: 70,
+          hooks: { beforeValidate: [({value}) => typeof value === "string" ? value.trim() : value] },
+          admin: { description: "Opțional: numai codul atribuit de producător. Nu se deduce automat din numele sau slug-ul produsului." } },
+        { name: "identifiersAbsent", label: "Producătorul confirmă că produsul nu are GTIN / MPN", type: "checkbox", defaultValue: false,
+          validate: (value, {siblingData}) => {
+            const identifiers = siblingData as {gtin?: string; mpn?: string};
+            return !value || !(identifiers?.gtin || identifiers?.mpn) || "Debifează lipsa identificatorilor când completezi GTIN sau MPN.";
+          },
+          admin: { description: "Bifează numai după confirmare. Dacă nu cunoști codurile, lasă nebifat; lipsa informației nu înseamnă că produsul nu are identificatori." } },
+      ],
     },
     {
       name: "color",

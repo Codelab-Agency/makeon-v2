@@ -835,3 +835,30 @@ test('an unconfigured merchant recipient does not block customer status emails a
     assert.ok(history.every(event=>event.state==='sent'));
   }finally{for(const name of names){if(previous[name]===undefined)delete process.env[name];else process.env[name]=previous[name];}}
 });
+
+test('Google product migration preserves inventory and prices and refuses to discard populated identifiers',async()=>{
+  const db=(cms.db as unknown as PostgresAdapter).drizzle;
+  const before=(await db.execute(sql`SELECT id,slug,price,stock,reserved FROM products ORDER BY id`)).rows;
+  await db.execute(sql`ALTER TABLE products DROP COLUMN brand, DROP COLUMN gtin, DROP COLUMN mpn, DROP COLUMN identifiers_absent, DROP COLUMN google_enabled`);
+  const migration=await import('../../src/migrations/20261106_120000_google_product_identifiers');
+  await migration.up({db} as Parameters<typeof migration.up>[0]);
+  assert.deepEqual((await db.execute(sql`SELECT id,slug,price,stock,reserved FROM products ORDER BY id`)).rows,before);
+  const p=await product(3);
+  await cms.update({collection:'products',id:p.id,data:{brand:'SwitchMORN Coffee',gtin:'5901234123457'}});
+  await assert.rejects(migration.down({db} as Parameters<typeof migration.down>[0]),/Cannot remove populated/);
+  assert.equal((await cms.findByID({collection:'products',id:p.id})).gtin,'5901234123457');
+});
+
+test('admin validates manufacturer identifiers without changing sellable stock or hiding products from the storefront',async()=>{
+  const p=await product(3);
+  await assert.rejects(cms.update({collection:'products',id:p.id,data:{gtin:'5901234123458'}}));
+  await cms.update({collection:'products',id:p.id,data:{identifiersAbsent:true}});
+  await assert.rejects(cms.update({collection:'products',id:p.id,data:{gtin:'5901234123457'}}));
+  const saved=await cms.update({collection:'products',id:p.id,data:{identifiersAbsent:false,gtin:' 5901234123457 ',brand:' Marca reală ',googleEnabled:false}});
+  assert.equal(saved.gtin,'5901234123457');assert.equal(saved.brand,'Marca reală');
+  assert.equal(saved.active,true);assert.equal(saved.googleEnabled,false);
+  assert.equal(saved.stock,3);assert.equal(saved.reserved,0);
+  const {publicProduct}=await import('../../src/lib/storefront');
+  const publicData=publicProduct(saved);
+  assert.equal(publicData.gtin,saved.gtin);assert.equal(publicData.stock,3);assert.equal(publicData.googleEnabled,false);
+});

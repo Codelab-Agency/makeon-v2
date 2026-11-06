@@ -1,5 +1,6 @@
 import * as checkoutReservations from './20261029_140000_checkout_reservations';
 import * as merchantOrderEmails from './20261105_120000_merchant_order_emails';
+import * as googleProductIdentifiers from './20261106_120000_google_product_identifiers';
 import * as migration_20261002_120914_initial from './20261002_120914_initial';
 import * as migration_20261002_121000_inventory_constraints from './20261002_121000_inventory_constraints';
 import * as migration_20261002_121759_r2_storage from './20261002_121759_r2_storage';
@@ -67,4 +68,5 @@ export const migrations = [
   { up: migration_20261029_120000_payment_methods.up, down: migration_20261029_120000_payment_methods.down, name: '20261029_120000_payment_methods' },
   { up: checkoutReservations.up, down: checkoutReservations.down, name: '20261029_140000_checkout_reservations' },
   { up: merchantOrderEmails.up, down: merchantOrderEmails.down, name: '20261105_120000_merchant_order_emails' },
+  { up: googleProductIdentifiers.up, down: googleProductIdentifiers.down, name: '20261106_120000_google_product_identifiers' },
 ];

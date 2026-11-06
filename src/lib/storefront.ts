@@ -12,6 +12,11 @@ export function publicProduct(doc: Product): CoffeeProduct {
   return {
     id: doc.id,
     updatedAt: doc.updatedAt,
+    brand: doc.brand,
+    gtin: doc.gtin,
+    mpn: doc.mpn,
+    identifiersAbsent: doc.identifiersAbsent,
+    googleEnabled: doc.googleEnabled,
     slug: doc.slug,
     name: doc.name,
     category: doc.category,
@@ -31,6 +36,7 @@ export function publicProduct(doc: Product): CoffeeProduct {
     price: doc.price ?? null,
     stock: Math.max(0, doc.stock - doc.reserved),
     imageUrl: image?.sizes?.card?.url || image?.url || undefined,
+    imageOriginalUrl: image?.url || image?.sizes?.card?.url || undefined,
     imageAlt: image?.alt,
   };
 }

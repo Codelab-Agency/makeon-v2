@@ -210,6 +210,26 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Produsele vizibile cu preț, stoc cunoscut și fotografie pot fi incluse în feed. Aprobarea se verifică în Merchant Center.
+   */
+  googleEnabled?: boolean | null;
+  /**
+   * Marca reală de pe ambalaj. Pentru cafea, câmpul gol folosește SwitchMORN Coffee. Pentru accesorii, completează marca producătorului dacă există.
+   */
+  brand?: string | null;
+  /**
+   * Codul de bare real al acestui ambalaj; păstrează zerourile de la început. Nu folosi un cod inventat sau codul altui gramaj.
+   */
+  gtin?: string | null;
+  /**
+   * Opțional: numai codul atribuit de producător. Nu se deduce automat din numele sau slug-ul produsului.
+   */
+  mpn?: string | null;
+  /**
+   * Bifează numai după confirmare. Dacă nu cunoști codurile, lasă nebifat; lipsa informației nu înseamnă că produsul nu are identificatori.
+   */
+  identifiersAbsent?: boolean | null;
   color?: string | null;
   origin?: string | null;
   altitude?: string | null;
@@ -443,6 +463,11 @@ export interface ProductsSelect<T extends boolean = true> {
         note?: T;
         id?: T;
       };
+  googleEnabled?: T;
+  brand?: T;
+  gtin?: T;
+  mpn?: T;
+  identifiersAbsent?: T;
   color?: T;
   origin?: T;
   altitude?: T;

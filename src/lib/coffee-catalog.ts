@@ -5,7 +5,13 @@ export type CoffeeProduct = {
   updatedAt?: string;
   stock?: number;
   imageUrl?: string;
+  imageOriginalUrl?: string;
   imageAlt?: string;
+  brand?: string | null;
+  gtin?: string | null;
+  mpn?: string | null;
+  identifiersAbsent?: boolean | null;
+  googleEnabled?: boolean | null;
   slug: string;
   name: string;
   category: CoffeeCategory;
