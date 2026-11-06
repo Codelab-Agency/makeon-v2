@@ -8,6 +8,17 @@ import { GET } from "../../src/app/google-merchant.xml/route";
 
 const product={...coffeeProducts[0],stock:5,price:49.99,imageUrl:'https://cdn.example.com/card.webp',imageOriginalUrl:'https://cdn.example.com/original.webp'};
 
+test('stored SKU remains the same feed and structured-data ID after renaming the product or changing its URL',()=>{
+  const original={...product,sku:'MKN-000001'};
+  const renamed={...original,slug:'another-url',name:'Another name'};
+  for(const item of [original,renamed]) {
+    assert.ok(buildMerchantFeed([item],2500).xml.includes('<g:id>MKN-000001</g:id>'));
+    assert.equal(productGraph(item).sku,'MKN-000001');
+    assert.ok(!buildMerchantFeed([item],2500).xml.includes('<g:mpn>'));
+  }
+  assert.equal(merchantExclusion({...original,sku:'bad sku'}),'invalid_id');
+});
+
 test('Merchant XML safely encodes real product, original image, pack size, VAT-inclusive price and configured shipping',()=>{
   const feed=buildMerchantFeed([{...product,name:'Cafea & <special>',description:'Cafea <b>proaspătă</b> & gust bun\u0001'}],2500);
   assert.equal(feed.count,1);assert.deepEqual(feed.excluded,[]);

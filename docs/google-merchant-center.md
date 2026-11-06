@@ -4,7 +4,7 @@ Implementare: 6 noiembrie 2026. Feed public: `https://makeon.ro/google-merchant.
 
 ## Ce este pregătit în site
 
-- RSS 2.0 cu namespace Google, generat din produsele active din CMS. Include ID stabil bazat pe slug, titlu, descriere, link canonical, imagine originală, preț RON cu TVA, disponibilitate, marcă și identificatori reali dacă sunt completați.
+- RSS 2.0 cu namespace Google, generat din produsele active din CMS. Include ID stabil bazat pe SKU, titlu, descriere, link canonical, imagine originală, preț RON cu TVA, disponibilitate, marcă și identificatori reali dacă sunt completați.
 - Prețurile și stocurile vin din aceleași date ca magazinul. Produsele fără preț, fotografie sau stoc cunoscut nu sunt exportate. Nu se publică prețuri zero ca înlocuitor pentru „la cerere”.
 - Produsele cu stoc zero rămân în feed ca `out_of_stock`, în acord cu `OutOfStock` din schema paginii. O cerere cu confirmare telefonică nu este o achiziție imediată din stoc. Nu se publică `backorder` și date de reaprovizionare inventate.
 - Transportul declarat în feed este tariful configurat `SHIPPING_PRICE_BANI` pentru Sameday la adresă, în România. Costul este inclus și în datele structurate ale produsului când configurația este validă. Nu au fost inventate termene de livrare sau condiții de retur.
@@ -31,6 +31,17 @@ Niciunul dintre cele 11 produse nu avea încă GTIN completat. Aceasta înseamn�
 Schema este adăugată prin migrarea `20261106_120000_google_product_identifiers`. Migrarea adaugă cinci coloane opționale și nu modifică prețurile, stocurile sau comenzile. A fost aplicată bazei configurate și s-a confirmat că toate cele 18 rânduri existente de produs au rămas identice pe coloanele anterioare. Pe alte baze, rulează `npm run cms:migrate` înainte de publicarea codului nou. Rollback-ul este blocat dacă ar elimina identificatori completați.
 
 ## Configurarea în contul Google
+
+Configurarea contului și încărcarea produselor sunt în responsabilitatea persoanei desemnate de proprietar. Implementarea din site nu creează conturi, nu revendică domenii și nu transmite produse în Google.
+
+### Predare și SKU-uri
+
+- Sursa de import recomandată: `https://makeon.ro/google-merchant.xml`. Include automat numai produsele active eligibile; nu necesită acces la admin sau la baza de date.
+- Cele 18 produse existente au SKU-uri permanente de forma `MKN-000001`, atribuite după ID-ul intern. Produsele noi primesc automat `MKN-` urmat de un identificator unic. SKU-ul este afișat în admin, în detaliile produsului, în `Product.sku` și ca `g:id` în feed. Redenumirea și schimbarea URL-ului nu schimbă SKU-ul.
+- Referința CSV pentru toate produsele, inclusiv cele inactive: `npm run products:export`. Fișierul rezultat este `artifacts/produse-google-metadata.csv`, în UTF-8, cu SKU, nume, vizibilitate, eligibilitate, marcă, GTIN/MPN, preț, stoc disponibil, ambalaj, link, imagine și descriere. Este un inventar datat pentru verificare; pentru importul Google se folosește XML-ul actualizat automat. Exportul citește catalogul și nu modifică date.
+- Înaintea acestei implementări, feedul folosea slug-ul ca ID. Dacă au fost deja importate acele ID-uri în Google, operatorul trebuie să reconcilieze sursa veche pentru a evita dublarea ofertelor. CSV-ul conține atât slug-ul vechi, cât și SKU-ul nou. Nu rula două surse paralele cu ID-uri diferite pentru aceleași oferte.
+- Migrarea `20261106_140000_product_skus` completează SKU-urile lipsă și impune unicitatea și formatul. Verificarea pe baza configurată a confirmat 18 coduri unice și păstrarea identică a tuturor celorlalte coloane de produs. Pe alte baze, migrarea se aplică înaintea publicării codului. Rollback-ul refuză eliminarea codurilor deja atribuite.
+- SKU-ul este un cod intern, separat de GTIN și MPN. EAN/GTIN necunoscut rămâne gol până la verificarea ambalajului. Nu se completează cu SKU-ul și nu se declară automat că nu există.
 
 1. Deschide [Google Merchant Center](https://merchants.google.com/) și creează/selectează contul comerciantului. Completează identitatea și contactele reale ale firmei.
 2. Verifică și revendică website-ul `https://makeon.ro` conform opțiunilor din cont. Proprietatea Search Console existentă este distinctă de configurarea contului Merchant Center.

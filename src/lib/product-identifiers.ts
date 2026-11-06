@@ -1,5 +1,10 @@
 import type { CoffeeProduct } from "./coffee-catalog";
 
+/** Legacy/static fixtures keep their old ID until a persisted SKU is available. */
+export function productSku(product: Pick<CoffeeProduct, "sku" | "slug">) {
+  return product.sku ?? product.slug;
+}
+
 export function validGtin(value: string) {
   if (!/^(?:\d{8}|\d{12}|\d{13}|\d{14})$/.test(value) || /^0+$/.test(value)) return false;
   const digits = value.slice(0, -1).split("").reverse();

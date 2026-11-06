@@ -2,7 +2,7 @@ import type { CoffeeProduct } from "./coffee-catalog";
 import { categoryLabel } from "./coffee-catalog";
 import { absoluteUrl, site } from "./seo";
 import { packageLabel } from "./product-format";
-import { productBrand, validGtin } from "./product-identifiers";
+import { productBrand, productSku, validGtin } from "./product-identifiers";
 
 export function escapeXml(value: string) {
   return value.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
@@ -21,7 +21,8 @@ function productImage(product: CoffeeProduct) {
 
 export function merchantExclusion(product: CoffeeProduct) {
   if (product.googleEnabled === false) return "disabled";
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(product.slug) || product.slug.length > 50) return "invalid_id";
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(product.slug)) return "invalid_link";
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(productSku(product)) || productSku(product).length > 50) return "invalid_id";
   if (!Number.isFinite(product.price) || product.price == null || product.price <= 0 || Math.abs(product.price * 100 - Math.round(product.price * 100)) > 0.00001) return "missing_price";
   if (!Number.isSafeInteger(product.stock) || product.stock! < 0) return "unknown_stock";
   if (!plain(product.name) || !plain(product.description)) return "missing_description";
@@ -43,7 +44,7 @@ export function buildMerchantFeed(products: CoffeeProduct[], shippingBani: numbe
     const brand = productBrand(product);
     const title = [brand, product.name, packageLabel(product), categoryLabel(product.category)].filter(Boolean).join(" · ").replace(/\s+/g," ").trim().slice(0, 150);
     items.push(`<item>\n${[
-      tag("id", product.slug), tag("title", title), tag("description", plain(product.description).slice(0, 5000)),
+      tag("id", productSku(product)), tag("title", title), tag("description", plain(product.description).slice(0, 5000)),
       tag("link", absoluteUrl(`/cafea/${product.slug}`)), tag("image_link", productImage(product)!),
       tag("availability", product.stock! > 0 ? "in_stock" : "out_of_stock"),
       tag("price", `${product.price!.toFixed(2)} RON`), tag("condition", "new"),

@@ -5,6 +5,7 @@ import { queueOrderStatusEmail } from "../lib/order-status-email";
 import { queueMerchantOrderEmail } from "../lib/merchant-order-email";
 import { mediaStorageErrorMessage } from "../lib/media-storage-error";
 import { validGtin } from "../lib/product-identifiers";
+import { randomUUID } from "node:crypto";
 
 const protectedAccess = {
   create: adminOnly,
@@ -90,10 +91,23 @@ export const Products: CollectionConfig = {
   admin: {
     useAsTitle: "name",
     group: "Magazin",
-    defaultColumns: ["name", "category", "price", "stock", "active"],
+    defaultColumns: ["name", "sku", "category", "price", "stock", "active"],
   },
   fields: [
     { name: "name", label: "Nume", type: "text", required: true },
+    {
+      name: "sku", label: "SKU", type: "text", unique: true, index: true,
+      maxLength: 50,
+      defaultValue: () => `MKN-${randomUUID().replaceAll("-", "").toUpperCase()}`,
+      admin: { readOnly: true, description: "Cod intern unic, generat automat și păstrat permanent. Nu este EAN / GTIN sau MPN." },
+      validate: (value: string | null | undefined) =>
+        Boolean(value && /^[A-Z0-9]+(?:-[A-Z0-9]+)*$/.test(value)) || "SKU invalid.",
+      hooks: { beforeChange: [({ value, originalDoc, operation }) => {
+        if (operation === "update" && originalDoc?.sku && value !== originalDoc.sku)
+          throw new APIError("SKU-ul unui produs existent nu poate fi schimbat.", 400);
+        return value;
+      }] },
+    },
     {
       name: "slug",
       type: "text",

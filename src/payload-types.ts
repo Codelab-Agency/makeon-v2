@@ -187,6 +187,10 @@ export interface Product {
   id: number;
   name: string;
   slug: string;
+  /**
+   * Cod intern unic, generat automat și păstrat permanent. Nu este EAN / GTIN sau MPN.
+   */
+  sku?: string | null;
   active?: boolean | null;
   category: 'boabe' | 'macinata' | 'solubila' | 'alternative' | 'decaff' | 'complementare';
   collection?: string | null;
@@ -446,6 +450,7 @@ export interface MediaSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  sku?: T;
   active?: T;
   category?: T;
   collection?: T;

@@ -15,6 +15,7 @@
     "test:e2e": "playwright test",
     "preview:images": "node scripts/preview.mjs",
     "cms:types": "node --conditions=react-server ./node_modules/payload/bin.js generate:types",
+    "products:export": "node --env-file=.env --conditions=react-server --import tsx scripts/export-product-metadata.ts",
     "cms:importmap": "node --conditions=react-server ./node_modules/payload/bin.js generate:importmap",
     "cms:migrate": "node --conditions=react-server ./node_modules/payload/bin.js migrate",
     "cms:migrate:verify": "node --env-file=.env --conditions=react-server --import tsx scripts/verify-migrations.mjs",

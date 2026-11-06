@@ -11,6 +11,7 @@ export function publicProduct(doc: Product): CoffeeProduct {
     doc.image && typeof doc.image === "object" ? doc.image : undefined;
   return {
     id: doc.id,
+    sku: doc.sku,
     updatedAt: doc.updatedAt,
     brand: doc.brand,
     gtin: doc.gtin,

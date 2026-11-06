@@ -3,7 +3,7 @@ import type { CoffeeProduct } from "./coffee-catalog";
 import { categoryLabel } from "./coffee-catalog";
 import { packageLabel } from "./product-format";
 import { legal } from "./legal";
-import { productBrand, gtinSchemaFields } from "./product-identifiers";
+import { productBrand, productSku, gtinSchemaFields } from "./product-identifiers";
 
 export const site = {
   name: "Makeon",
@@ -100,7 +100,7 @@ export function productGraph(product: CoffeeProduct, shippingBani?: number) {
   const image = product.imageOriginalUrl || product.imageUrl;
   return { "@context": "https://schema.org", "@type": "Product", "@id": `${url}#product`, url,
     name: `${product.name} · ${packageLabel(product)}`, description: product.description,
-    category: categoryLabel(product.category), sku: product.slug,
+    category: categoryLabel(product.category), sku: productSku(product),
     ...(image ? { image: [absoluteUrl(image)] } : {}),
     ...(brand ? { brand: { "@type": "Brand", name: brand } } : {}),
     ...gtinSchemaFields(product.gtin),

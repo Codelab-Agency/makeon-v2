@@ -24,6 +24,8 @@ test("Google Merchant XML parses and matches the live product pages, including s
     const html=await request.get(path).then(response=>response.text());
     const graphs=[...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match=>JSON.parse(match[1]));
     const product=graphs.find(graph=>graph['@type']==='Product');
+    expect(product.sku).toBe(item.id);
+    expect(product.sku).toMatch(/^MKN-[A-Z0-9-]+$/);
     expect(`${product.offers.price} ${product.offers.priceCurrency}`).toBe(item.price);
     expect(product.offers.availability).toBe(`https://schema.org/${item.availability==='in_stock'?'InStock':'OutOfStock'}`);
     expect(product.image).toContain(item.image);

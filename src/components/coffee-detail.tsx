@@ -35,6 +35,7 @@ export default function CoffeeDetail({ product }: { product: CoffeeProduct }) {
   const { add } = useCart();
   const description = productDescription(product.description);
   const specs = [
+    ["SKU", product.sku],
     ["Format", categoryLabel(product.category)],
     ["Cantitate", packageLabel(product)],
     ...(!complementary ? [["Origine", product.origin], ["Altitudine", product.altitude], ["Varietate", product.variety], ["Procesare", product.processing], ["Prăjire", product.roast]] : []),

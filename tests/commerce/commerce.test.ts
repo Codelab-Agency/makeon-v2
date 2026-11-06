@@ -75,6 +75,7 @@ before(async () => {
   const { Pool } = await import('pg');
   const cleanup = new Pool({connectionString:process.env.DATABASE_URL});
   await cleanup.query('DROP TABLE IF EXISTS public.order_shipments; DROP TABLE IF EXISTS public.order_status_emails; DROP TABLE IF EXISTS public.checkout_reservations');
+  await cleanup.query('TRUNCATE orders, products RESTART IDENTITY CASCADE');
   await cleanup.end();
   const { getPayload } = await import('payload');
   const { default: config } = await import('../../src/payload.config');
@@ -861,4 +862,25 @@ test('admin validates manufacturer identifiers without changing sellable stock o
   const {publicProduct}=await import('../../src/lib/storefront');
   const publicData=publicProduct(saved);
   assert.equal(publicData.gtin,saved.gtin);assert.equal(publicData.stock,3);assert.equal(publicData.googleEnabled,false);
+});
+
+test('SKU backfill preserves existing business data, enforces uniqueness and generates immutable SKUs for new products',async()=>{
+  const db=(cms.db as unknown as PostgresAdapter).drizzle;
+  const snapshot=async()=>(await db.execute(sql`SELECT id,slug,price,stock,reserved FROM products ORDER BY id`)).rows;
+  const before=await snapshot();
+  await db.execute(sql`ALTER TABLE products DROP COLUMN sku CASCADE`);
+  const migration=await import('../../src/migrations/20261106_140000_product_skus');
+  await migration.up({db} as Parameters<typeof migration.up>[0]);
+  assert.deepEqual(await snapshot(),before);
+  const rows=(await db.execute(sql`SELECT id,sku FROM products ORDER BY id`)).rows;
+  for(const row of rows)assert.equal(row.sku,`MKN-${String(row.id).padStart(6,'0')}`);
+  await assert.rejects(db.execute(sql`UPDATE products SET sku = NULL WHERE id = ${rows[0].id}`));
+  await assert.rejects(db.execute(sql`UPDATE products SET sku = ${rows[0].sku} WHERE id = ${rows[1].id}`));
+  const p=await product(4),other=await product(4);
+  assert.match(p.sku!,/^MKN-[A-F0-9]{32}$/);assert.notEqual(p.sku,other.sku);
+  const renamed=await cms.update({collection:'products',id:p.id,data:{name:'Renamed',slug:`renamed-${randomUUID()}`}});
+  assert.equal(renamed.sku,p.sku);
+  await assert.rejects(cms.update({collection:'products',id:p.id,data:{sku:'MKN-CHANGED'}}));
+  await assert.rejects(cms.update({collection:'products',id:p.id,data:{sku:null}}));
+  await assert.rejects(migration.down({db} as Parameters<typeof migration.down>[0]),/Cannot remove assigned/);
 });
