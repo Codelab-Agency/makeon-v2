@@ -169,3 +169,31 @@ test('AWB eligibility follows confirmed COD or paid status and reports unconfirm
   for(const totalBani of [0,-1,NaN,Infinity,125.5])
     assert.equal(shipmentPayment({...cod,totalBani}).allowed,false);
 });
+
+test('personal easybox dropoff sends PDO while preserving the recipient and COD amount',async()=>{
+  const {samedayOptions}=await import('../../src/lib/sameday-client');
+  const parsed=shippingInput({...input,personalDropoff:true});
+  const cod={...order,status:'cod_pending' as const,paymentMethod:'cod' as const,totalBani:12500};
+  const body=shipmentBody(cod,parsed),form=samedayForm(body);
+  assert.equal(form.get('serviceTaxes[0]'),'PDO');
+  assert.equal(form.get('cashOnDelivery'),'125');
+  assert.equal(form.get('awbRecipient[address]'),input.address);
+  assert.equal(form.has('lockerLastMile'),false);
+  assert.equal(samedayForm(shipmentBody(order,shippingInput(input))).has('serviceTaxes[0]'),false);
+  assert.equal(samedayForm(shipmentBody(order,parsed)).get('cashOnDelivery'),'0');
+  assert.throws(()=>shippingInput({...input,personalDropoff:'true'}));
+  configure();
+  const services=[
+    {id:7,name:'24H',serviceCode:'24',serviceOptionalTaxes:[{taxCode:'PDO',packageType:0}]},
+    {id:8,name:'24H fără PDO',serviceCode:'24',serviceOptionalTaxes:[]},
+    {id:9,name:'24H plic',serviceCode:'24',serviceOptionalTaxes:[{taxCode:'PDO',packageType:1}]},
+    {id:15,name:'Easybox',serviceCode:'LN',serviceOptionalTaxes:[{taxCode:'PDO',packageType:0}]},
+  ];
+  const fetcher=(async(url:string|URL|Request)=>{
+    if(String(url).includes('/api/client/services'))return Response.json({pages:1,data:services});
+    return mock(async()=>{throw new Error('AWB must not be dispatched');})(url);
+  }) as typeof fetch;
+  const options=await samedayOptions(fetcher);
+  assert.deepEqual(options.services.map(s=>[s.id,s.personalDropoff]),[[7,true],[8,false],[9,false],[15,true]]);
+  await assert.rejects(createOrderShipment({} as Payload,1,{...input,service:8,personalDropoff:true},fetcher),/PDO/);
+});
