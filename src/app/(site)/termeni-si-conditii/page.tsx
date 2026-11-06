@@ -26,8 +26,9 @@ export default function TermsPage() {
       <section>
         <h2>2. Comerciantul</h2>
         <p>
-          Makeon este denumirea comercială folosită pe acest site. Identitatea
-          juridică a vânzătorului se completează mai jos.
+          Makeon este denumirea comercială folosită pe acest site de{" "}
+          {legal.company.name}. Datele de identificare ale comerciantului sunt
+          prezentate mai jos.
         </p>
         <CompanyDetails />
         <LegalContact />

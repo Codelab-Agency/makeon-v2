@@ -2,10 +2,15 @@
  * bump the terms version when publishing a materially revised document.
  */
 export const legal = {
-  version: "2026-10-29",
-  updated: "29 octombrie 2026",
+  version: "2026-11-06",
+  updated: "6 noiembrie 2026",
   draft: true,
-  company: { name: "", cui: "", registration: "", address: "" },
+  company: {
+    name: "VENDING STORE IMPEX SRL",
+    cui: "30702112",
+    registration: "J40/10880/2012",
+    address: "Str. Sg. Maj. Ilie Ancuta nr. 3-9, Sectorul 4, București, cod poștal 040556, România",
+  },
   email: "info@makeon.ro",
   phone: "+40 744 524 728",
   phoneHref: "tel:+40744524728",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import LegalDocument, { LegalContact } from "@/components/legal-document";
+import LegalDocument, { CompanyDetails, LegalContact } from "@/components/legal-document";
 import { legal } from "@/lib/legal";
 import { pageMetadata } from "@/lib/seo";
 
@@ -11,6 +11,11 @@ export const metadata: Metadata = {
 export default function CookiesPage() {
   return (
     <LegalDocument title="Politica de cookie-uri">
+      <section>
+        <h2>Operatorul site-ului</h2>
+        <p>Site-ul Makeon este administrat de {legal.company.name}.</p>
+        <CompanyDetails />
+      </section>
       <section>
         <h2>1. Cookie-uri și stocare în browser</h2>
         <p>

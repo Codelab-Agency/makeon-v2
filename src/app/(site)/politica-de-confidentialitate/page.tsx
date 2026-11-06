@@ -17,9 +17,9 @@ export default function PrivacyPage() {
       <section>
         <h2>1. Cine folosește datele</h2>
         <p>
-          Comerciantul care operează Makeon este responsabil pentru datele
-          folosite la gestionarea comenzilor și solicitărilor. Datele sale
-          juridice trebuie completate înainte de lansare.
+          {legal.company.name}, comerciantul care operează Makeon, este
+          responsabil pentru datele folosite la gestionarea comenzilor și
+          solicitărilor. Datele sale de identificare sunt prezentate mai jos.
         </p>
         <CompanyDetails />
         <LegalContact />

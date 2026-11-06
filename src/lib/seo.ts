@@ -69,6 +69,8 @@ export function serializeJsonLd(data: unknown) {
 export function organizationGraph() {
   return { "@context": "https://schema.org", "@graph": [
     { "@type": "Organization", "@id": `${site.url}/#organization`, name: site.name, url: site.url,
+      legalName: legal.company.name, taxID: legal.company.cui,
+      identifier: { "@type": "PropertyValue", propertyID: "Registrul Comerțului", value: legal.company.registration },
       logo: { "@type": "ImageObject", url: absoluteUrl("/images/makeon-logo-preview.png") },
       email: legal.email, telephone: legal.phone, description: seoPages["/"].description,
       brand: [{ "@type": "Brand", name: "SwitchMORN Coffee" }, { "@type": "Brand", name: "Vero Aqua" }],

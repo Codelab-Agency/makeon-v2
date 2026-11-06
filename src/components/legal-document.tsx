@@ -49,8 +49,8 @@ export default function LegalDocument({
         <p className="legal-updated">Ultima actualizare: {legal.updated}</p>
         {legal.draft && (
           <aside className="legal-draft">
-            Versiune de lucru. Datele comerciantului, contactele și condițiile
-            comerciale trebuie completate și confirmate înainte de lansare.
+            Versiune de lucru. Condițiile comerciale și procedurile de
+            prelucrare a datelor sunt în curs de confirmare.
           </aside>
         )}
         {children}

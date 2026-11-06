@@ -42,7 +42,7 @@ Schema este adăugată prin migrarea `20261106_120000_google_product_identifiers
 
 ## Date care mai necesită confirmarea proprietarului
 
-Configurația legală a site-ului este încă marcată `draft`, cu denumirea juridică, CUI, nr. Registrul Comerțului și sediul necompletate. Aceste date și condițiile finale de livrare/retur trebuie completate și aprobate pentru prezentarea corectă a comerciantului. Nu este suficient un feed valid pentru aprobarea contului sau produselor.
+Identitatea comerciantului a fost confirmată de proprietar: VENDING STORE IMPEX SRL, CUI 30702112, J40/10880/2012, cu sediul în Str. Sg. Maj. Ilie Ancuta nr. 3-9, Sectorul 4, București, cod poștal 040556. Datele sunt completate în toate politicile. Configurația legală rămâne `draft` până la confirmarea condițiilor finale de livrare/retur și a procedurilor de prelucrare a datelor. Nu este suficient un feed valid pentru aprobarea contului sau produselor.
 
 Verifică EAN/GTIN pe fiecare ambalaj și completează identificatorii reali. Nu copia un cod între gramaje sau produse diferite. Dacă există o excepție legitimă pentru produse fără identificatori, confirm-o înainte să o declari în admin.
 
