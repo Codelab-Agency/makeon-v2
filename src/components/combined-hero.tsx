@@ -39,9 +39,12 @@ export default function CombinedHero({ onOffer }: { onOffer: () => void }) {
             <div className="opening-discovery">
               <Link className="opening-preview" href="/prajitoria" aria-label="Descoperă prăjitoria Makeon">
                 <span className="opening-preview-image"><Image src="/images/switchmorn-coffee-corner.webp" alt="Cafea SwitchMORN pregătită pentru un eveniment" fill sizes="(max-width: 800px) 45vw, 220px" /></span>
-                <span className="opening-preview-copy"><span>DIN PRĂJITORIE</span><strong>Cafea proaspăt prăjită.</strong><span>Descoperă povestea <ArrowUpRight size={15} aria-hidden="true" /></span></span>
+                <span className="opening-preview-copy"><strong>Cafea proaspăt prăjită.</strong><span>Direct din prăjitorie <ArrowUpRight size={15} aria-hidden="true" /></span></span>
               </Link>
-              <div className="opening-seal" aria-label="Cafea și apă, un singur partener"><span>Cafea + apă</span><strong>un singur<br />partener</strong><ArrowUpRight size={20} aria-hidden="true" /></div>
+              <Link className="opening-round-link" href="#solutii" aria-label="Vezi soluțiile pentru cafea și apă">
+                <svg viewBox="0 0 140 140" aria-hidden="true"><defs><path id="opening-round-path" d="M70 70 m-59 0 a59 59 0 1 1 118 0 a59 59 0 1 1 -118 0" /></defs><text><textPath href="#opening-round-path">CAFEA · APĂ · SERVICE · CAFEA · APĂ · SERVICE · </textPath></text></svg>
+                <span className="opening-round-core"><ArrowUpRight size={20} aria-hidden="true" /><span>Vezi soluțiile</span></span>
+              </Link>
             </div>
           </div>
           <div className="opening-photo-mask">
@@ -56,10 +59,9 @@ export default function CombinedHero({ onOffer }: { onOffer: () => void }) {
                 />
               </div>
             </div>
-            <div className="opening-photo-caption" aria-hidden="true"><span>MAKEON / CAFEA ȘI APĂ</span><span>O pauză mai bună, în fiecare zi.</span></div>
           </div>
         </div>
-        <div className="opening-progress" aria-hidden="true"><span /></div>
+        <div className="opening-progress" aria-hidden="true"><span /><span /><span /></div>
       </div>
     </section>
   );
