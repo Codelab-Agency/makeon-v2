@@ -9,10 +9,10 @@ import ContactRequestForm from "./contact-request-form";
 export function HomeArguments() {
   return <section className="home-arguments-band" aria-label="De ce Makeon">
     <div className="b2b-container home-arguments">
-      <span><small aria-hidden="true">01</small>Prăjită proaspăt</span>
-      <span><small aria-hidden="true">02</small>Aparate în comodat</span>
-      <span><small aria-hidden="true">03</small>Filtrare profesională</span>
-      <span><small aria-hidden="true">04</small>Service și aprovizionare</span>
+      <span>Prăjită proaspăt</span>
+      <span>Aparate în comodat</span>
+      <span>Filtrare profesională</span>
+      <span>Service și aprovizionare</span>
     </div>
   </section>;
 }

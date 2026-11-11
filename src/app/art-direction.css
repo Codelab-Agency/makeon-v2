@@ -63,7 +63,6 @@
 .home-arguments { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; margin-top:0; padding-block:28px; border:0; }
 .home-arguments > span { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; min-height:64px; padding-inline:clamp(16px,2.4vw,36px); border-left:1px solid rgb(255 255 255 / .17); color:#f7f5ef; font-size:15px; font-weight:500; line-height:1.4; }
 .home-arguments > span:first-child { padding-left:0; border-left:0; }
-.home-arguments small { color:#c8a976; font:650 10px/1.2 var(--font-body); letter-spacing:.16em; }
 
 /* Service surfaces keep the content while reducing the nested-card look. */
 .home-solutions { padding-block:clamp(84px,8vw,118px) 36px; }
