@@ -176,23 +176,30 @@ export default function WaterLanding() {
                     Tu îți vezi de zi.
                   </h2>
                 </div>
-                <p>
-                  De la instalare la întreținere, serviciile pentru dozator sunt
-                  incluse în abonament.
-                </p>
               </div>
-              <div className="water-team-benefits"><div><h3>Apă la îndemână toată ziua</h3><p>Trei temperaturi pentru pauzele și băuturile echipei.</p></div><div><h3>Mai puțin plastic</h3><p>Un dozator și recipiente reutilizabile reduc nevoia sticlelor de unică folosință.</p></div><div><h3>Mai puțină logistică</h3><p>Un singur partener pentru aparat, întreținere și schimbul filtrelor.</p></div></div>
-              <ul className="water-page-inclusion-grid">
-                {inclusions.map(({ Icon, title, text }) => (
-                  <li key={title}>
-                    <span className="water-page-icon">
-                      <Icon size={23} strokeWidth={1.6} aria-hidden="true" />
-                    </span>
-                    <h3>{title}</h3>
-                    <p>{text}</p>
-                  </li>
-                ))}
-              </ul>
+              <div className="water-team-benefits">
+                <div><h3>Apă la îndemână toată ziua</h3><p>Trei temperaturi pentru pauzele și băuturile echipei.</p></div>
+                <div><h3>Mai puțin plastic</h3><p>Un dozator și recipiente reutilizabile reduc nevoia sticlelor de unică folosință.</p></div>
+                <div><h3>Mai puțină logistică</h3><p>Un singur partener pentru aparat, întreținere și schimbul filtrelor.</p></div>
+              </div>
+              <div className="water-page-included-panel">
+                <div className="water-page-included-intro">
+                  <p className="water-page-eyebrow">Servicii incluse</p>
+                  <h3>Ce primești în abonament</h3>
+                  <p>De la instalare la întreținere, serviciile pentru dozator sunt incluse în abonament.</p>
+                </div>
+                <ul className="water-page-inclusion-grid">
+                  {inclusions.map(({ Icon, title, text }) => (
+                    <li key={title}>
+                      <span className="water-page-icon">
+                        <Icon size={23} strokeWidth={1.6} aria-hidden="true" />
+                      </span>
+                      <h3>{title}</h3>
+                      <p>{text}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <p className="water-page-fineprint">
                 Oferta este exclusiv pentru apă. Configurația, cerințele de
                 instalare și condițiile finale se confirmă la contractare.

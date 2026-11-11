@@ -27,15 +27,28 @@
 .water-page-reassurance { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px 24px; margin-top:24px; padding:18px 0; border-bottom:1px solid var(--makeon-border); }
 .water-page-reassurance p,.water-page-reassurance a { display:inline-flex; align-items:center; gap:10px; font-size:13px; line-height:1.6; color:var(--water-muted); }
 .water-page-reassurance a { min-height:44px; color:var(--water-ink); }
-.water-page-inclusions { padding-block:64px; scroll-margin-top:106px; }
+.water-page-inclusions { padding-block:76px 88px; scroll-margin-top:106px; }
 .water-page-section-head { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr); align-items:end; gap:24px 64px; margin-bottom:30px; }
 .water-service-page :is(.water-page-section-head,.water-page-filter-copy) h2 { margin:0; font:600 clamp(28px,2.7vw,40px)/1.2 var(--font-heading); letter-spacing:-.04em; }
 .water-page-section-head > p { max-width:43ch; color:var(--makeon-muted); font-size:15px; line-height:1.75; }
-.water-page-inclusion-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; margin:0; padding:0; list-style:none; }
-.water-page-inclusion-grid > li { min-width:0; padding:22px 18px; border:1px solid #e2e7e4; border-radius:14px; background:#f4f6f3; }
-.water-page-icon { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; margin-bottom:20px; border-radius:12px; color:var(--water-ink); background:#e4edeb; }
-.water-service-page .water-page-inclusion-grid h3 { margin:0 0 10px; font:600 20px/1.25 var(--font-heading); letter-spacing:-.02em; }
-.water-page-inclusion-grid p { color:var(--makeon-muted); font-size:13px; line-height:1.65; }
+.water-page-inclusions > .water-page-section-head { display:block; max-width:780px; margin-bottom:36px; }
+.water-page-inclusions .water-team-benefits { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; margin:0 0 48px; padding:28px 12px; border-radius:10px; background:#e8eeec; }
+.water-page-inclusions .water-team-benefits > div { min-width:0; padding-inline:28px; border-inline-start:1px solid #c9d8d4; }
+.water-page-inclusions .water-team-benefits > div:first-child { border-inline-start:0; }
+.water-page-inclusions .water-team-benefits h3 { font-size:26px; line-height:1.15; }
+.water-page-inclusions .water-team-benefits p { margin-top:12px; font-size:14px; line-height:1.65; }
+.water-page-included-panel { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:clamp(40px,6vw,100px); padding:clamp(32px,4vw,56px); border-radius:10px; background:#213c41; color:#f4f8f5; }
+.water-page-included-intro { max-width:38ch; }
+.water-page-included-intro .water-page-eyebrow { color:#a9c8c8; }
+.water-service-page .water-page-included-intro h3 { font:600 clamp(30px,3vw,42px)/1.1 var(--font-heading); letter-spacing:-.03em; }
+.water-page-included-intro > p:last-child { margin-top:20px; color:#c7d9d7; font-size:15px; line-height:1.75; }
+.water-page-inclusion-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:0; margin:0; padding:0; list-style:none; }
+.water-page-inclusion-grid > li { display:grid; grid-template-columns:42px minmax(0,1fr); align-content:center; gap:3px 16px; min-width:0; padding-block:16px; border:0; border-top:1px solid rgb(255 255 255 / .2); border-radius:0; background:transparent; }
+.water-page-inclusion-grid > li:first-child { padding-top:0; border-top:0; }
+.water-page-inclusion-grid > li:last-child { padding-bottom:0; }
+.water-page-icon { display:inline-flex; grid-column:1; grid-row:1 / span 2; align-items:center; justify-content:center; width:42px; height:42px; margin:0; border-radius:8px; color:#b9d8d6; background:rgb(255 255 255 / .09); }
+.water-service-page .water-page-inclusion-grid h3 { grid-column:2; margin:0; font:600 21px/1.15 var(--font-heading); letter-spacing:-.02em; }
+.water-page-inclusion-grid p { grid-column:2; color:#c7d9d7; font-size:13px; line-height:1.55; }
 .water-page-fineprint { max-width:100ch; margin-top:20px; color:var(--makeon-muted); font-size:12px; line-height:1.7; }
 .water-page-filtration { padding-block:64px; background:#edf2f2; scroll-margin-top:86px; }
 .water-page-filter-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; gap:clamp(32px,5vw,72px); }
@@ -67,8 +80,7 @@
   .water-page-product-surface { height:610px; padding:22px; }
   .water-page-temperatures { gap:6px; }
   .water-page-temperatures > span { padding:9px 10px; gap:5px; font-size:11px; }
-  .water-page-inclusion-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
-  .water-page-inclusion-grid > li { padding:22px; }
+  .water-page-inclusions .water-team-benefits > div { padding-inline:18px; }
 }
 @media (max-width:800px) {
   .water-page-opening { padding-top:12px; }
@@ -81,7 +93,11 @@
   .water-page-apparatus { width:210px; }
   .water-page-section-head { grid-template-columns:minmax(0,1fr); gap:18px; }
   .water-page-section-head > p { max-width:55ch; }
-  .water-page-inclusions { padding-block:44px; }
+  .water-page-inclusions { padding-block:56px 64px; }
+  .water-page-inclusions .water-team-benefits { grid-template-columns:minmax(0,1fr); margin-bottom:32px; padding:8px 28px; }
+  .water-page-inclusions .water-team-benefits > div { padding:22px 0; border-inline-start:0; border-top:1px solid #c9d8d4; }
+  .water-page-inclusions .water-team-benefits > div:first-child { border-top:0; }
+  .water-page-included-panel { grid-template-columns:minmax(0,1fr); gap:30px; }
   .water-page-filter-grid { grid-template-columns:minmax(0,1fr); gap:28px; }
   .water-page-filter-copy { grid-row:1; }
   .water-page-filtration { padding-block:44px; }
@@ -103,11 +119,12 @@
   .water-page-reassurance { gap:4px; margin-top:12px; }
   .water-page-reassurance p { align-items:start; font-size:12px; }
   .water-page-reassurance p svg { margin-top:2px; }
-  .water-page-inclusion-grid { grid-template-columns:minmax(0,1fr); gap:10px; }
-  .water-page-inclusion-grid > li { display:grid; grid-template-columns:42px minmax(0,1fr); gap:4px 14px; align-items:center; padding:18px; }
-  .water-page-inclusion-grid .water-page-icon { grid-column:1; grid-row:1 / span 2; margin:0; }
-  .water-service-page .water-page-inclusion-grid h3 { grid-column:2; margin:0; }
-  .water-page-inclusion-grid li > p { grid-column:2; }
+  .water-page-inclusions > .water-page-section-head { margin-bottom:28px; }
+  .water-page-inclusions .water-team-benefits { padding-inline:22px; }
+  .water-page-inclusions .water-team-benefits > div { padding-block:20px; }
+  .water-page-inclusions .water-team-benefits h3 { font-size:25px; }
+  .water-page-included-panel { padding:26px 22px; }
+  .water-page-inclusion-grid > li { gap:3px 12px; }
   .water-page-filters .b2b-filter-media { height:250px; }
   .water-page-filter-stages { gap:16px 12px; }
   .water-page-filter-stages li { font-size:12px; gap:8px; }
