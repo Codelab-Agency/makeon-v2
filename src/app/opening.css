@@ -3,7 +3,6 @@
 .opening-stage { padding:24px var(--page-gutter) 0; width:100%; margin-inline:auto; }
 .opening-atmosphere { position:relative; display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr); align-items:center; min-height:620px; gap:clamp(72px,9vw,150px); background:var(--makeon-surface); color:var(--makeon-ink); }
 .opening-photo-mask { position:relative; grid-column:2; grid-row:1; width:100%; aspect-ratio:1/1; overflow:hidden; border-radius:30px; background:#e7e9e3; }
-.opening-photo-mask::after { content:""; position:absolute; inset:auto auto -1px -1px; width:calc(15% + 2px); height:calc(43% + 1px); border-top-right-radius:100% 35%; background:var(--makeon-surface); pointer-events:none; }
 .opening-photo-pan,.opening-photo-enter { position:absolute; inset:0; }
 .opening-photo-enter img { object-fit:cover; object-position:85% 50%; }
 .opening-copy { grid-column:1; grid-row:1; min-width:0; padding:32px 0; }
@@ -30,7 +29,6 @@
   .opening-atmosphere { grid-template-columns:minmax(0,1fr); gap:16px; min-height:0; }
   .opening-copy { grid-column:1; grid-row:1; padding-block:28px 12px; }
   .opening-photo-mask { grid-column:1; grid-row:2; height:360px; border-radius:18px; }
-  .opening-photo-mask::after { width:15%; height:43%; }
   .b2b-site .opening-copy h1 { font-size:clamp(44px,8.5vw,66px); }
   .opening-description { max-width:48ch; }
   .opening-benefits { margin-top:24px; }
