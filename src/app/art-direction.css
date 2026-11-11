@@ -149,10 +149,9 @@
 /* Service pages share the same action, type and photograph treatment. */
 .b2b-site :is(.coffee-editorial-hero,.water-page-opening,.event-intro,.roastery-hero) { padding-block:clamp(56px,5vw,82px); }
 .b2b-site :is(.coffee-editorial-hero,.event-intro,.roastery-hero) .b2b-title { line-height:1.02; }
-.b2b-site :is(.service-coffee-photo,.roastery-hero-image,.roastery-gallery-image,.water-page-product-surface) { border-radius:9px; }
+.b2b-site :is(.service-coffee-photo,.roastery-hero-image,.water-page-product-surface) { border-radius:9px; }
 .water-page-product-surface { background:#e2eceb; }
 .water-page-temperatures > span { border-radius:5px; }
-.roastery-gallery { gap:14px; }
 .event-section-nav a { border-radius:5px; background:transparent; }
 
 /* The shop keeps its flow, with real coffee texture in place of empty decoration. */

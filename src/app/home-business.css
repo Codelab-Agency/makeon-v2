@@ -33,9 +33,18 @@
 .roastery-hero .b2b-title { margin:20px 0; }
 .roastery-hero-image { position:relative; min-width:0; height:480px; border-radius:20px; overflow:hidden; }
 .roastery-hero-image img { object-fit:cover; }
-.roastery-gallery { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; padding-block:0 64px; }
-.roastery-gallery-image { position:relative; min-width:0; height:clamp(300px,38vw,520px); overflow:hidden; border-radius:20px; background:var(--makeon-surface-muted); }
-.roastery-gallery-image img { object-fit:cover; }
+.roastery-story-section { background:#29382f; color:#f8f5ec; }
+.roastery-story { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); align-items:center; gap:clamp(64px,8vw,130px); padding-block:clamp(84px,9vw,128px); }
+.roastery-story-copy { max-width:44ch; }
+.roastery-story-copy .b2b-eyebrow { color:#d1b27e; }
+.b2b-site .roastery-story-copy h2 { margin:22px 0; color:#f8f5ec; font:600 clamp(44px,4.2vw,64px)/1.04 var(--font-heading); letter-spacing:-.035em; }
+.roastery-story-copy > p:last-child { color:#d3d9d0; font-size:17px; line-height:1.75; }
+.roastery-story-media { position:relative; min-width:0; height:clamp(480px,43vw,620px); }
+.roastery-story-main,.roastery-story-detail { position:absolute; overflow:hidden; border-radius:9px; background:#1c2922; }
+.roastery-story-main { inset:0 0 0 16%; }
+.roastery-story-detail { inset:auto auto -5% 0; width:37%; height:46%; border:8px solid #29382f; }
+.roastery-story-main img { object-fit:cover; object-position:center 52%; }
+.roastery-story-detail img { object-fit:cover; object-position:center 72%; }
 .roastery-details { padding-block:48px 64px; }
 .roastery-detail-grid,.water-team-benefits { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:28px; margin-block:30px; }
 .roastery-detail-grid article { padding:26px; border-radius:16px; background:var(--makeon-surface-muted); }
@@ -50,7 +59,7 @@
 .office-team-table-wrap :is(th,td) { padding:18px; text-align:left; border-bottom:1px solid var(--makeon-border); vertical-align:top; }
 .office-team-table-wrap thead { background:var(--makeon-surface-muted); }
 @media(max-width:1000px) { .home-arguments { grid-template-columns:repeat(2,minmax(0,1fr)); } .home-arguments > span { justify-content:flex-start; } .home-contact-grid,.home-questions { grid-template-columns:minmax(0,1fr); gap:28px; } }
-@media(max-width:800px) { .home-roastery,.roastery-hero { grid-template-columns:minmax(0,1fr); gap:28px; padding-block:44px; } .home-roastery-image,.roastery-hero-image { height:320px; } .roastery-gallery { gap:12px; padding-bottom:44px; } .roastery-gallery-image { height:clamp(240px,55vw,380px); border-radius:14px; } .roastery-detail-grid,.water-team-benefits { grid-template-columns:minmax(0,1fr); gap:22px; } .home-questions,.home-contact-section,.roastery-details,.office-team-guide { padding-block:44px; } }
+@media(max-width:800px) { .home-roastery,.roastery-hero { grid-template-columns:minmax(0,1fr); gap:28px; padding-block:44px; } .home-roastery-image,.roastery-hero-image { height:320px; } .roastery-story { grid-template-columns:minmax(0,1fr); gap:38px; padding-block:64px 82px; } .roastery-story-media { height:clamp(380px,65vw,520px); } .roastery-detail-grid,.water-team-benefits { grid-template-columns:minmax(0,1fr); gap:22px; } .home-questions,.home-contact-section,.roastery-details,.office-team-guide { padding-block:44px; } }
 @media(max-width:540px) { .home-arguments { gap:16px 12px; padding-block:22px; } .home-arguments > span { font-size:11px; gap:7px; } .home-arguments svg { width:17px; } .home-contact-form { padding:20px; } .home-contact-form .contact-fields { grid-template-columns:minmax(0,1fr); } .home-contact-form .contact-field-wide { grid-column:auto; } .office-team-table-wrap :is(th,td) { padding:12px 10px; font-size:13px; } .home-solution-points { font-size:13px; } }
 .b2b-home .opening-title-line { text-wrap:balance; }
 .b2b-home .opening-copy h1 { font-size:clamp(44px,4.2vw,64px); }
