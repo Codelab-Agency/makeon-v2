@@ -75,7 +75,9 @@ before(async () => {
   const { Pool } = await import('pg');
   const cleanup = new Pool({connectionString:process.env.DATABASE_URL});
   await cleanup.query('DROP TABLE IF EXISTS public.order_shipments; DROP TABLE IF EXISTS public.order_status_emails; DROP TABLE IF EXISTS public.checkout_reservations');
-  await cleanup.query('TRUNCATE orders, products RESTART IDENTITY CASCADE');
+  const existing = await cleanup.query("SELECT to_regclass('public.orders') AS orders, to_regclass('public.products') AS products");
+  if (existing.rows[0].orders && existing.rows[0].products)
+    await cleanup.query('TRUNCATE orders, products RESTART IDENTITY CASCADE');
   await cleanup.end();
   const { getPayload } = await import('payload');
   const { default: config } = await import('../../src/payload.config');
@@ -92,6 +94,8 @@ before(async () => {
   await notifications.up({ db: adapter.drizzle } as Parameters<typeof notifications.up>[0]);
   const merchantEmails = await import('../../src/migrations/20261105_120000_merchant_order_emails');
   await merchantEmails.up({ db: adapter.drizzle } as Parameters<typeof merchantEmails.up>[0]);
+  const shipments = await import('../../src/migrations/20261022_120000_sameday_shipments');
+  await shipments.up({ db: adapter.drizzle } as Parameters<typeof shipments.up>[0]);
   const reservations = await import('../../src/migrations/20261029_140000_checkout_reservations');
   await reservations.up({ db: adapter.drizzle } as Parameters<typeof reservations.up>[0]);
   commerce = await import('../../src/lib/commerce');
@@ -523,7 +527,6 @@ test('card checkout preserves the company snapshot after Stripe payment and sett
 
 test('COD cancellation restores stock once; verified collection is independent of fulfillment', async () => {
   const adapter = cms.db as unknown as PostgresAdapter;
-  await adapter.drizzle.execute(sql`CREATE TABLE IF NOT EXISTS order_shipments (order_id integer PRIMARY KEY, state text)`);
   const {updateCashOnDelivery} = await import('../../src/lib/cod-orders');
   const p = await product(3), key=randomUUID();
   await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:2}],key,fakeStripe,cms,legal.version,checkoutDetails());
@@ -533,7 +536,8 @@ test('COD cancellation restores stock once; verified collection is independent o
   const key2=randomUUID();
   await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],key2,fakeStripe,cms,legal.version,checkoutDetails());
   const delivered=(await cms.find({collection:'orders',where:{reference:{equals:`MK-${key2}`}}})).docs[0];
-  await adapter.drizzle.execute(sql`INSERT INTO order_shipments VALUES (${delivered.id},'created')`);
+  await adapter.drizzle.execute(sql`INSERT INTO order_shipments(order_id,environment,account_hash,attempt_id,state,request)
+    VALUES (${delivered.id},'sandbox','test-account',${randomUUID()},'sending','{}'::jsonb)`);
   await assert.rejects(updateCashOnDelivery(cms,delivered.id,'cancel'));
   await updateCashOnDelivery(cms,delivered.id,'collect'); await updateCashOnDelivery(cms,delivered.id,'collect');
   const saved=await cms.findByID({collection:'orders',id:delivered.id});
@@ -613,6 +617,20 @@ test('old abandoned drafts are deleted without touching made-to-order requests',
   assert.equal((await cms.findByID({collection:'orders',id:production.id})).status,'expired');
 });
 
+test('legacy drafts with notification history remain intact while unreferenced drafts are pruned',async()=>{
+  const p=await product(1);
+  const create=async()=>cms.create({collection:'orders',data:{reference:`MK-${randomUUID()}`,orderType:'stock',fulfillmentStatus:'new',paymentMethod:'card',status:'expired',currency:'ron',totalBani:1000,shippingBani:0,items:[{product:p.id,slug:p.slug,name:p.name,grind:'Boabe',quantity:1,unitPriceBani:1000}]}});
+  const protectedOrder=await create(),unreferenced=await create();
+  const db=(cms.db as unknown as PostgresAdapter).drizzle;
+  await db.execute(sql`INSERT INTO order_status_emails(event_id,order_id,target_status,body)
+    VALUES (${randomUUID()},${protectedOrder.id},'new',${JSON.stringify({to:[],subject:'Legacy notification'})}::jsonb)`);
+  await commerce.pruneAbandonedCheckouts(cms);
+  assert.equal((await cms.findByID({collection:'orders',id:protectedOrder.id})).status,'expired');
+  assert.equal((await db.execute(sql`SELECT id FROM order_status_emails WHERE order_id=${protectedOrder.id}`)).rows.length,1);
+  assert.equal((await cms.count({collection:'orders',where:{id:{equals:unreferenced.id}}})).totalDocs,0);
+  await commerce.pruneAbandonedCheckouts(cms);
+});
+
 test('card attempts never create orders, even with admin access; only verified payment registers one', async () => {
   const p = await product(2), key = randomUUID(), reference = `MK-${key}`;
   await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}], key, fakeStripe, cms, legal.version, checkoutDetails('card'));
@@ -651,6 +669,23 @@ test('legacy card checkouts already open before deployment can still settle', as
   const saved=(await cms.find({collection:'orders',where:{reference:{equals:reference}}})).docs[0];
   assert.equal(saved.status,'paid');
   assert.equal((await cms.findByID({collection:'products',id:p.id})).stock,0);
+});
+
+test('expiring a legacy checkout with email history releases stock and retains its order', async () => {
+  const p=await product(1),key=randomUUID(),reference=`MK-${key}`;
+  await commerce.createCheckout([{slug:p.slug,grind:'Boabe',quantity:1}],key,fakeStripe,cms);
+  const {id:_,createdAt:__,updatedAt:___,...snapshot}=await reservation(reference);
+  const legacy=await cms.create({collection:'orders',data:snapshot});
+  const db=(cms.db as unknown as PostgresAdapter).drizzle;
+  await db.execute(sql`DELETE FROM checkout_reservations WHERE reference=${reference}`);
+  await db.execute(sql`INSERT INTO order_status_emails(event_id,order_id,target_status,body)
+    VALUES (${randomUUID()},${legacy.id},'new',${JSON.stringify({to:[],subject:'Legacy notification'})}::jsonb)`);
+  await commerce.applySession({...keys.get(reference)!,status:'expired'},cms);
+  assert.equal((await cms.findByID({collection:'orders',id:legacy.id})).status,'expired');
+  assert.equal((await cms.findByID({collection:'products',id:p.id})).stock,1);
+  assert.equal((await cms.findByID({collection:'products',id:p.id})).reserved,0);
+  assert.equal((await db.execute(sql`SELECT id FROM order_status_emails WHERE order_id=${legacy.id}`)).rows.length,1);
+  await commerce.pruneAbandonedCheckouts(cms);
 });
 
 test('made-to-order checkout saves canonical customer details before quoting, reuses its payment link and keeps the request on cancellation', async () => {

@@ -114,9 +114,27 @@ async function updateCheckout(cms: Payload, id: number | string, order: Checkout
   return updated;
 }
 
-async function deleteCheckout(cms: Payload, id: number | string, order: CheckoutOrder) {
-  if (order.reservation) await transactionDB(cms, id).execute(sql`DELETE FROM checkout_reservations WHERE reference = ${order.reference}`);
-  else await cms.delete({ collection: "orders", id: order.id, req: { transactionID: id } });
+async function hasOrderHistory(cms: Payload, id: number | string, orderID: number) {
+  const result = await transactionDB(cms, id).execute(sql`SELECT
+    (EXISTS (SELECT 1 FROM order_status_emails WHERE order_id = ${orderID})
+      OR EXISTS (SELECT 1 FROM order_shipments WHERE order_id = ${orderID})) AS has_history`);
+  return result.rows[0]?.has_history === true;
+}
+
+/** Preserve notification and shipment audit trails for legacy checkout drafts. */
+async function finishAbandonedCheckout(cms: Payload, id: number | string, order: CheckoutOrder, status: "expired" | "failed") {
+  const db = transactionDB(cms, id);
+  if (order.reservation) {
+    await db.execute(sql`DELETE FROM checkout_reservations WHERE reference = ${order.reference}`);
+    return;
+  }
+  // FK inserts lock the parent row. Lock it first so history cannot appear
+  // between our check and the delete in another transaction.
+  await db.execute(sql`SELECT id FROM orders WHERE id = ${order.id} FOR UPDATE`);
+  const req = { transactionID: id };
+  if (await hasOrderHistory(cms, id, order.id))
+    await cms.update({ collection: "orders", id: order.id, req, data: { status } });
+  else await cms.delete({ collection: "orders", id: order.id, req });
 }
 
 /**
@@ -187,7 +205,7 @@ export async function applySession(
         throw new Error("Stock reservation is inconsistent.");
     }
     if (target === "expired" && order.orderType !== "production") {
-      await deleteCheckout(cms, id, order);
+      await finishAbandonedCheckout(cms, id, order, "expired");
       return;
     }
     const data: Partial<Order> = {
@@ -206,7 +224,7 @@ export async function applySession(
     if (order.reservation) {
       const { id: _, reservation: __, createdAt: ___, updatedAt: ____, ...snapshot } = order;
       const registered = await cms.create({ collection: "orders", req, data: { ...snapshot, ...data } });
-      await deleteCheckout(cms, id, order);
+      await db.execute(sql`DELETE FROM checkout_reservations WHERE reference = ${order.reference}`);
       return registered;
     }
     return updateCheckout(cms, id, order, data);
@@ -239,7 +257,7 @@ async function failDraft(cms: Payload, reference: string) {
         throw new Error("Stock reservation is inconsistent.");
     }
     if (order.orderType !== "production") {
-      await deleteCheckout(cms, id, order);
+      await finishAbandonedCheckout(cms, id, order, "failed");
     } else {
       await cms.update({ collection: "orders", id: order.id, req, data: { status: "failed" } });
     }
@@ -264,8 +282,11 @@ export async function pruneAbandonedCheckouts(cms: Payload) {
     const req = { transactionID: id };
     await lockOrder(cms, id, draft.reference);
     const current = (await cms.find({ collection: "orders", req, depth: 0, limit: 1, where: { id: { equals: draft.id } } })).docs[0];
-    if (current && current.orderType !== "production" && current.paymentMethod !== "cod" && ["expired", "failed"].includes(current.status))
-      await cms.delete({ collection: "orders", id: current.id, req });
+    if (current && current.orderType !== "production" && current.paymentMethod !== "cod" && ["expired", "failed"].includes(current.status)) {
+      await transactionDB(cms, id).execute(sql`SELECT id FROM orders WHERE id = ${current.id} FOR UPDATE`);
+      if (!(await hasOrderHistory(cms, id, current.id)))
+        await cms.delete({ collection: "orders", id: current.id, req });
+    }
   });
 }
 
