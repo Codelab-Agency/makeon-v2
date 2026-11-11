@@ -17,7 +17,7 @@ export function HomeArguments() {
 
 export function HomeRoastery() {
   return <section className="b2b-container home-roastery" aria-labelledby="home-roastery-title">
-    <div className="home-roastery-image"><Image src="/images/switchmorn-coffee-corner.webp" alt="Cafea SwitchMORN și espressor pentru birou" fill sizes="(max-width: 800px) 90vw, 45vw" /></div>
+    <div className="home-roastery-image"><Image src="/images/roastery/coffee-roaster.jpg" alt="Prăjitorul de cafea din prăjitoria SwitchMORN" fill sizes="(max-width: 800px) 90vw, 45vw" /></div>
     <div><p className="b2b-eyebrow">SwitchMORN · Prăjitoria ta</p><h2 id="home-roastery-title">Din prăjitorie,<br />direct în pauza ta.</h2><p>Cafea proaspăt prăjită, cu profilul potrivit pentru espresso sau filtru. De la cafele de origine la blendul echipei, alegem împreună gustul și planificăm livrările.</p><Link className="b2b-link" href="/prajitoria">Descoperă prăjitoria<ArrowUpRight size={18} aria-hidden="true" /></Link></div>
   </section>;
 }
