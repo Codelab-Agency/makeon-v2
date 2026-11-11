@@ -17,7 +17,7 @@ export default function CombinedHero({ onOffer }: { onOffer: () => void }) {
             <div className="opening-photo-pan">
               <div className="opening-photo-enter">
                 <Image
-                  src="/images/makeon-office-hero-v2.webp"
+                  src="/images/makeon-office-hero-black.webp"
                   alt="Espressor SwitchMORN și dozator Vero Aqua într-un spațiu de birou"
                   fill
                   preload

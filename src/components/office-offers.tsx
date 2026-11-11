@@ -118,7 +118,7 @@ export default function OfficeOffers() {
               <div className="opening-product-scroll">
                 <div className="opening-product-interaction">
                   <Image
-                    src="/images/vero-aqua-dispenser.webp"
+                    src="/images/vero-aqua-dispenser-black.webp"
                     alt="Dozator vertical Vero Aqua pentru birouri"
                     fill
                     sizes="(max-width: 540px) 34vw, (max-width: 1279px) 17vw, 14vw"

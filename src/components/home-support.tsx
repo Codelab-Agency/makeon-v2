@@ -143,7 +143,7 @@ export default function HomeSupport() {
                 </div>
                 <div className="home-water-apparatus" data-choreo-media>
                   <Image
-                    src="/images/vero-aqua-dispenser.webp"
+                    src="/images/vero-aqua-dispenser-black.webp"
                     alt="Dozatorul Vero Aqua cu apă rece, caldă și la temperatura camerei"
                     fill
                     sizes="(max-width: 700px) 150px, 210px"

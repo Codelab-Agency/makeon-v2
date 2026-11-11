@@ -121,7 +121,7 @@ export default function WaterLanding() {
                     data-presentation-product
                   >
                     <Image
-                      src="/images/vero-aqua-dispenser.webp"
+                      src="/images/vero-aqua-dispenser-black.webp"
                       alt="Dozatorul de apă Vero Aqua prezentat în oferta pentru birouri"
                       fill
                       preload

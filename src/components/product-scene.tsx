@@ -12,7 +12,7 @@ export default function ProductScene({ kind = "both", className = "" }: Props) {
       >
         <image
           className="water-dispenser-float"
-          href="/images/vero-aqua-dispenser.webp"
+          href="/images/vero-aqua-dispenser-black.webp"
           x="190"
           y="24"
           width="320"

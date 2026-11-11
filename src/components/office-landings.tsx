@@ -9,7 +9,7 @@ import { useRef } from "react";
 import usePresentationEntrance from "./use-presentation-entrance";
 import HomeProcess from "./home-process";
 
-const officeIllustration = "/images/makeon-office-hero-v2.webp";
+const officeIllustration = "/images/makeon-office-hero-black.webp";
 
 
 export function CoffeeOfficeLanding() {
