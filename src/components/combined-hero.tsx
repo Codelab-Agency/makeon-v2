@@ -55,10 +55,6 @@ export default function CombinedHero({ onOffer }: { onOffer: () => void }) {
                   <ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
               </div>
-              <div className="opening-benefits">
-                <span>SwitchMORN Coffee</span>
-                <span>Vero Aqua</span>
-              </div>
             </div>
           </div>
         </div>

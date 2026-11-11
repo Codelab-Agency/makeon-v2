@@ -184,7 +184,7 @@ export default function BusinessShell({ children, initialInterest = "Cafea + ap�
         <button type="button" className="dialog-close" aria-label="Închide formularul" onClick={() => setOpened(false)}><X size={21} aria-hidden="true" /></button>
         <aside className="dialog-intro">
           <div>
-            <p className="b2b-eyebrow">CERERE DE OFERTĂ</p>
+            <p className="b2b-eyebrow">SOLICITARE DE OFERTĂ</p>
             <h2 id="contact-dialog-title">{context.title}</h2>
             <p className="dialog-description" id="contact-dialog-description"><span className="dialog-description-full">{context.description}</span><span className="dialog-description-compact">{context.compactDescription}</span></p>
           </div>

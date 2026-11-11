@@ -35,6 +35,7 @@ import "../site-choreography.css";
 import "../media-frames.css";
 import "../water-page.css";
 import "../home-business.css";
+import "../art-direction.css";
 import CartProvider from "@/components/cart-provider";
 import CatalogProvider from "@/components/catalog-provider";
 import SmoothScroll from "@/components/smooth-scroll";

@@ -3,23 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, Coffee, PackageCheck, Droplets, Wrench } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import ContactRequestForm from "./contact-request-form";
 
 export function HomeArguments() {
-  return <div className="b2b-container home-arguments" aria-label="De ce Makeon">
-    <span><Coffee size={20} aria-hidden="true" />Prăjită proaspăt</span>
-    <span><PackageCheck size={20} aria-hidden="true" />Aparate în comodat</span>
-    <span><Droplets size={20} aria-hidden="true" />Filtrare profesională</span>
-    <span><Wrench size={20} aria-hidden="true" />Service și aprovizionare</span>
-  </div>;
+  return <section className="home-arguments-band" aria-label="De ce Makeon">
+    <div className="b2b-container home-arguments">
+      <span><small aria-hidden="true">01</small>Prăjită proaspăt</span>
+      <span><small aria-hidden="true">02</small>Aparate în comodat</span>
+      <span><small aria-hidden="true">03</small>Filtrare profesională</span>
+      <span><small aria-hidden="true">04</small>Service și aprovizionare</span>
+    </div>
+  </section>;
 }
 
 export function HomeRoastery() {
-  return <section className="b2b-container home-roastery" aria-labelledby="home-roastery-title">
+  return <section className="home-roastery-section" aria-labelledby="home-roastery-title"><div className="b2b-container home-roastery">
     <div className="home-roastery-image"><Image src="/images/roastery/coffee-roaster.jpg" alt="Prăjitorul de cafea din prăjitoria SwitchMORN" fill sizes="(max-width: 800px) 90vw, 45vw" /></div>
     <div><p className="b2b-eyebrow">SwitchMORN · Prăjitoria ta</p><h2 id="home-roastery-title">Din prăjitorie,<br />direct în pauza ta.</h2><p>Cafea proaspăt prăjită, cu profilul potrivit pentru espresso sau filtru. De la cafele de origine la blendul echipei, alegem împreună gustul și planificăm livrările.</p><Link className="b2b-link" href="/prajitoria">Descoperă prăjitoria<ArrowUpRight size={18} aria-hidden="true" /></Link></div>
-  </section>;
+  </div></section>;
 }
 
 const questions = [

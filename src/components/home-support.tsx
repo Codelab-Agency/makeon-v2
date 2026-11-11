@@ -76,10 +76,6 @@ export default function HomeSupport() {
                     />
                   </div>
                 </div>
-                <figcaption>
-                  <span>Espressor și cafea SwitchMORN</span>
-                  <span>Pauza începe aici.</span>
-                </figcaption>
               </figure>
             </div>
             <div className="home-solution-footer" data-choreo-item>

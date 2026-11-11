@@ -1,0 +1,219 @@
+/* Makeon: one calm material palette, expressive headings and product-led photography. */
+:root {
+  --makeon-surface:#f8f7f3;
+  --makeon-surface-muted:#edece6;
+  --makeon-graphite:#202a24;
+  --makeon-ink:#202923;
+  --makeon-muted:#56615a;
+  --makeon-border:#d5d8d0;
+  --makeon-gold:#c4a16b;
+  --makeon-accent:var(--makeon-gold);
+  --makeon-action:#c4a16b;
+  --makeon-action-hover:#d3b481;
+  --makeon-focus:#8d652b;
+  --makeon-media-radius:10px;
+  --section-space:clamp(64px,7vw,112px);
+}
+
+.site > .site-header-modern {
+  height:80px;
+  background:rgb(248 247 243 / .96);
+  border-bottom:1px solid var(--makeon-border);
+  box-shadow:none;
+}
+.site-header-modern .desktop-nav { gap:clamp(16px,1.8vw,30px); }
+.site-header-modern .desktop-nav > a { font-size:14px; font-weight:500; border-bottom-width:2px; }
+.site-header-modern .desktop-nav > a[aria-current] { border-color:var(--makeon-gold); }
+.site-header-modern .offer-button,
+.modern-mobile-menu .mobile-offer-button,
+.b2b-site .b2b-btn {
+  border:1px solid var(--makeon-graphite);
+  border-radius:7px;
+  background:var(--makeon-graphite);
+  color:#fffdf7;
+  font-weight:550;
+  box-shadow:none;
+}
+.site-header-modern .offer-button > svg,
+.modern-mobile-menu .mobile-offer-button > svg,
+.b2b-site .b2b-btn > svg { color:#d9b47b; }
+.site-header-modern .offer-button:hover,
+.b2b-site .b2b-btn:hover { background:#34443a; border-color:#34443a; color:#fffdf7; }
+.b2b-site :is(.b2b-btn,.primary-button):not(:disabled):active,
+.site-header-modern .offer-button:active { background:#34443a; border-color:#34443a; color:#fffdf7; }
+.b2b-site .b2b-link { border-color:#809086; color:var(--makeon-ink); font-weight:550; }
+.b2b-site .b2b-link > svg { color:#9e7a4e; }
+.b2b-site :is(.b2b-title,.b2b-heading,.b2b-h3) { letter-spacing:-.035em; }
+.b2b-site .b2b-eyebrow { color:#806a4e; font-size:11px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; }
+.site.b2b-site { background:var(--makeon-surface); }
+
+/* Opening: strong type, a single distinctive crop and a compact set of actions. */
+.opening-stage { padding-top:26px; }
+.opening-atmosphere { min-height:650px; gap:clamp(56px,7.8vw,136px); }
+.b2b-site .opening-copy h1 { font-size:clamp(50px,5.15vw,76px); line-height:1.02; letter-spacing:-.035em; }
+.opening-line-mask:last-child { color:#385146; }
+.opening-eyebrow { margin-bottom:28px; color:#806a4e; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+.opening-description { max-width:45ch; margin-top:30px; color:#46534b; font-size:17px; line-height:1.7; }
+.opening-actions { margin-top:32px; gap:14px 28px; }
+.opening-actions > a:not(.b2b-btn) { border-bottom:1px solid #88968c; font-weight:550; }
+.opening-photo-mask { border-radius:24px; }
+
+/* A dark signature band gives the four promises a clear visual role. */
+.home-arguments-band { margin-top:34px; background:#202b25; color:#f7f5ef; }
+.home-arguments { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; margin-top:0; padding-block:28px; border:0; }
+.home-arguments > span { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; min-height:64px; padding-inline:clamp(16px,2.4vw,36px); border-left:1px solid rgb(255 255 255 / .17); color:#f7f5ef; font-size:15px; font-weight:500; line-height:1.4; }
+.home-arguments > span:first-child { padding-left:0; border-left:0; }
+.home-arguments small { color:#c8a976; font:650 10px/1.2 var(--font-body); letter-spacing:.16em; }
+
+/* Service surfaces keep the content while reducing the nested-card look. */
+.home-solutions { padding-block:clamp(84px,8vw,118px) 36px; }
+.home-solutions-heading { margin-bottom:40px; align-items:end; }
+.b2b-site .home-solutions-heading h2 { font-size:clamp(44px,4.2vw,62px); line-height:1.02; }
+.home-solutions-heading > p { font-size:16px; line-height:1.7; }
+.home-solutions-grid { gap:16px; }
+.home-solution { padding:clamp(26px,3vw,42px); border-radius:10px; }
+.home-solution-coffee { background:#26342c; }
+.home-solution-water { background:#e3ebea; }
+.b2b-site .home-solution-copy h3 { font-size:clamp(34px,3vw,46px); line-height:1.1; }
+.home-solution-description { line-height:1.65; }
+.home-solution-media { height:330px; }
+.site.b2b-site .home-solution-coffee .home-coffee-visual,
+.home-water-showcase { border-radius:6px; }
+.home-solution-footer { padding-top:28px; }
+.home-solution-action .b2b-btn { min-height:56px; }
+.b2b-site .home-solution-coffee .b2b-btn { border-color:#ecdfc8; background:#ecdfc8; color:#26342c; }
+.b2b-site .home-solution-coffee .b2b-btn > svg { color:#26342c; }
+.b2b-site .home-solution-coffee .b2b-btn:hover { border-color:#fff3dc; background:#fff3dc; color:#26342c; }
+
+/* The process reads as three deliberate steps rather than a widget. */
+.home-process { padding-block:clamp(88px,8vw,120px); }
+.home-process-panel { padding:0; border:0; border-radius:0; background:transparent; }
+.home-process-panel > h2 { font-size:clamp(44px,4vw,58px); }
+.home-process-steps { gap:clamp(20px,3vw,44px); margin-top:54px; }
+.home-process-steps > li { display:block; padding-top:20px; border-top:1px solid #bfc7bd; }
+.home-process-steps > li:not(:last-child)::before { display:none; }
+.home-process-index { display:block; color:#99784b; font:650 12px/1.2 var(--font-body); letter-spacing:.14em; }
+.home-process-copy { margin-top:38px; }
+.b2b-site .home-process-steps h3 { max-width:18ch; font-size:clamp(26px,2.4vw,34px); line-height:1.12; }
+.home-process-steps p { margin-top:16px; color:#56615a; font-size:15px; line-height:1.7; }
+
+/* The real roastery photograph becomes a chapter break. */
+.home-roastery-section { background:#29382f; color:#f8f5ec; }
+.home-roastery { gap:clamp(44px,6vw,96px); padding-block:clamp(72px,7vw,104px); }
+.home-roastery-image { height:clamp(380px,34vw,490px); border-radius:8px; background:#1c2922; }
+.home-roastery .b2b-eyebrow { color:#d1b27e; }
+.b2b-site .home-roastery h2 { color:#f8f5ec; font-size:clamp(44px,4.2vw,62px); line-height:1.04; }
+.home-roastery p:not(.b2b-eyebrow) { color:#d3d9d0; font-size:17px; line-height:1.75; }
+.home-roastery .b2b-link { margin-top:36px; border-color:#b6c0b2; color:#f8f5ec; }
+.home-roastery .b2b-link > svg { color:#d1b27e; }
+.home-roastery .b2b-link:hover { border-color:#e5d0a8; color:#fff; }
+
+/* Product and event images carry their sections with restrained framing. */
+.b2b-home #magazin { padding-block:clamp(80px,7vw,108px); }
+.b2b-home #magazin .b2b-section-head { margin-bottom:36px; }
+.b2b-home #magazin .b2b-heading { font-size:clamp(42px,4vw,60px); }
+.site :is(.shop-product-art,.detail-product-gallery) { border-color:#e0e2da; border-radius:8px; background:#eeeee8; }
+.home-events { background:#ebeae4; padding-block:clamp(88px,8vw,120px); }
+.site.b2b-site :is(.event-pair-media,.event-intro-photo) { border-radius:8px; }
+.event-pair-copy { padding-top:24px; }
+.b2b-site .event-pair-copy .b2b-heading { font-size:clamp(28px,2.5vw,36px); }
+
+/* Clear answers followed by one high-contrast contact point. */
+.home-questions { grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr); gap:clamp(48px,7vw,112px); padding-block:clamp(88px,8vw,120px); }
+.b2b-site .home-questions h2 { max-width:10ch; font-size:clamp(46px,4vw,60px); line-height:1.02; }
+.home-questions dl > div { padding-block:26px; }
+.home-questions dl > div:first-child { padding-top:0; }
+.home-questions dt { font-size:clamp(24px,2.25vw,31px); line-height:1.16; }
+.home-questions dd { max-width:70ch; margin-top:14px; }
+.home-contact-section { padding-block:clamp(82px,8vw,120px); background:#33483b; }
+.home-contact-grid { align-items:center; gap:clamp(48px,6vw,96px); }
+.home-contact-grid .b2b-eyebrow { color:#d9bd91; }
+.b2b-site .home-contact-grid h2 { max-width:11ch; color:#fffdf6; font-size:clamp(52px,4.8vw,72px); line-height:1; }
+.home-contact-grid > div > p:not(.b2b-eyebrow) { color:#e0e6dc; font-size:17px; }
+.home-contact-form { padding:clamp(24px,3vw,42px); border:0; border-radius:9px; background:#faf9f5; box-shadow:0 26px 64px rgb(15 29 18 / .13); }
+.home-contact-form :is(input,textarea,.custom-select-trigger) { border-color:#bec6bd; border-radius:5px; background:#fff; }
+.home-contact-form form > .primary-button { border-radius:6px; background:#202a24; color:#fffdf7; }
+.home-contact-form form > .primary-button:hover { background:#34443a; }
+
+/* A dark, readable close for every route. */
+.site-footer { padding-block:clamp(70px,7vw,100px) 28px; border:0; background:#1d2821; color:#f8f6ee; }
+.site-footer-top { gap:clamp(48px,7vw,112px); padding-bottom:64px; }
+.site-footer .brand-mark-light .brand-wordmark { color:#f8f6ee; }
+.site .site-footer .site-footer-top .site-footer-identity > p { color:#bcc7bb; }
+.site-footer .site-footer-contact > a { color:#f8f6ee; font-size:clamp(23px,2.2vw,32px); }
+.site-footer .site-footer-navigation nav > p { color:#c5a776; font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+.site-footer .site-footer-navigation :is(a,button) { color:#ecf0e7; font-size:15px; }
+.site-footer .site-footer-utility { border-color:rgb(255 255 255 / .19); }
+.site-footer .site-footer-utility :is(p,.legal-footer-links a) { color:#b5c0b3; }
+.site-footer :is(a,button):focus-visible { outline-color:#e0c08e; }
+
+/* Service pages share the same action, type and photograph treatment. */
+.b2b-site :is(.coffee-editorial-hero,.water-page-opening,.event-intro,.roastery-hero) { padding-block:clamp(56px,5vw,82px); }
+.b2b-site :is(.coffee-editorial-hero,.event-intro,.roastery-hero) .b2b-title { line-height:1.02; }
+.b2b-site :is(.service-coffee-photo,.roastery-hero-image,.roastery-gallery-image,.water-page-product-surface) { border-radius:9px; }
+.water-page-product-surface { background:#e2eceb; }
+.water-page-temperatures > span { border-radius:5px; }
+.water-page-inclusion-grid > li { border:0; border-top:1px solid #cad6d3; border-radius:0; background:transparent; }
+.roastery-gallery { gap:14px; }
+.event-section-nav a { border-radius:5px; background:transparent; }
+
+/* The shop keeps its flow, with real coffee texture in place of empty decoration. */
+.shop-site .shop-banner {
+  min-height:340px;
+  background-color:#1e2922;
+  background-image:linear-gradient(90deg,#1c2720 0%,#1c2720 35%,rgb(28 39 32 / .84) 52%,rgb(28 39 32 / .22) 100%),url('/images/roastery/fresh-roast.jpg');
+  background-size:cover;
+  background-position:center 52%;
+  color:#f8f5ee;
+}
+.shop-site .shop-banner::before { display:none; }
+.shop-site .shop-banner .eyebrow { color:#e0bd86; font-size:10px; letter-spacing:.18em; }
+.shop-site .shop-banner h1 { font-size:clamp(48px,5vw,74px); line-height:1.04; }
+.shop-site .shop-banner h1 span { color:#d8b68a; }
+.shop-site .shop-banner p { color:#e3e7dd; font-size:15px; line-height:1.6; }
+
+@media(max-width:1279px) {
+  .site > .site-header-modern { height:76px; }
+}
+@media(max-width:900px) {
+  .home-arguments { grid-template-columns:repeat(2,minmax(0,1fr)); padding-block:18px; }
+  .home-arguments > span { min-height:80px; }
+  .home-arguments > span:nth-child(odd) { padding-left:0; border-left:0; }
+  .home-arguments > span:nth-child(n+3) { border-top:1px solid rgb(255 255 255 / .17); }
+  .home-process-steps > li { display:block; }
+  .home-process-copy { margin-top:20px; }
+  .home-questions { grid-template-columns:minmax(0,1fr); gap:36px; }
+  .home-contact-grid { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:800px) {
+  .opening-stage { padding-top:8px; }
+  .opening-atmosphere { min-height:0; gap:24px; }
+  .b2b-site .opening-copy h1 { font-size:clamp(44px,8.5vw,66px); }
+  .home-roastery { padding-block:64px; }
+  .home-roastery-image { height:320px; }
+  .home-solutions { padding-top:72px; }
+  .site-footer-top { padding-bottom:42px; }
+}
+@media(max-width:540px) {
+  .opening-eyebrow { margin-bottom:22px; }
+  .opening-description { font-size:16px; }
+  .opening-photo-mask { border-radius:18px; }
+  .home-arguments-band { margin-top:36px; }
+  .home-arguments > span { padding-inline:14px; font-size:13px; }
+  .home-solutions { padding-block:72px 22px; }
+  .b2b-site .home-solutions-heading h2 { font-size:46px; }
+  .home-solution { padding:24px 20px; }
+  .home-process { padding-block:72px; }
+  .home-process-steps { gap:30px; margin-top:38px; }
+  .home-roastery { padding-block:58px; }
+  .home-roastery-image { height:290px; }
+  .b2b-site .home-roastery h2 { font-size:46px; }
+  .home-questions { padding-block:72px; }
+  .home-contact-section { padding-block:72px; }
+  .b2b-site .home-contact-grid h2 { font-size:52px; }
+  .site-footer { padding-block:64px 24px; }
+  .shop-site .shop-banner { min-height:300px; background-image:linear-gradient(90deg,rgb(28 39 32 / .96),rgb(28 39 32 / .76)),url('/images/roastery/fresh-roast.jpg'); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .site-header-modern .offer-button,.b2b-site .b2b-btn { transition:none; }
+}
